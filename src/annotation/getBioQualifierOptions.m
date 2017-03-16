@@ -1,0 +1,13 @@
+function [ BioQualifierOptions ] = getBioQualifierOptions()
+% GETBIOQUALIFIEROPTIONS returns the list of valid BioQualifier Options.
+% OUTPUT 
+% BioQualifierOptions      The List of BioQualifier OPtions that are valid for biological
+%                          entities. 
+BioQualifierOptions = {'encodes', 'encodement', 'hasPart', 'part', 'hasProperty',...
+    'property', 'hasVersion', 'version', 'is', 'identity', 'isDescribedBy',...
+    'description', 'isEncodedBy', 'encoder', 'isHomologTo', 'homolog', 'isPartOf',...
+    'parthood', 'isPropertyOf', 'propertyBearer', 'isVersionOf', 'hypernym', 'occursIn',...
+    'container', 'hasTaxon', 'taxon'}
+
+end
+
