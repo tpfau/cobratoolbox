@@ -25,6 +25,13 @@ global GET_DATABASEID_TESTING
 global GET_DATABASEID_TESTING_POSITIONINPUT
 global GET_DATABASEID_TESTING_LABELINPUT
 
+%If there is no information in the database, its ID is empty.
+if isempty(databaseid)
+    database = '';
+    pattern = '';
+    return
+end
+
 specialDataBases = {'kegg','metanetx'};
 
 

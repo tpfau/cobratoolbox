@@ -42,8 +42,8 @@ p.CaseSensitive = false;
 parse(p,varargin{:});
 res = struct();
 if ~isempty(p.Results.fieldDescription)
-    res.modelFieldName = ModelFields{ismember(ModelFields,p.Results.fieldDescription) |...
-        strcmpi(ModelFieldDescriptions,p.Results.fieldDescription)};
+    res.modelFieldName = [ModelFields{ismember(ModelFields,p.Results.fieldDescription) |...
+        strcmpi(ModelFieldDescriptions,p.Results.fieldDescription)}];
 end
 if p.Results.returnFieldNames
     res.fieldNames = ModelFields;    

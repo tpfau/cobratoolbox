@@ -24,7 +24,7 @@ function [results ListResults] = findRxnsFromGenes(model, genes, numericFlag, Li
 % edited interface for backward compatibility (Ronan, Ines)
 
 if nargin==4
-   warning('3rd argument is numericFlag, currently redundant, will be depreciated')
+   %warning('3rd argument is numericFlag, currently redundant, will be depreciated')
 end
 
 if nargin< 3
