@@ -1,15 +1,16 @@
-% The COBRAToolbox: changeObjective.m
+% The COBRAToolbox: testChangeObjective.m
 %
 % Purpose:
 %     - Tests the changeObjective function
 % Author:
 %     - Original file: Stefania Magnusdottir
 
-% define the path to The COBRA Toolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testModelManipulation'])
+% initialize the test
+fileDir = fileparts(which('testChangeObjective'));
+cd(fileDir);
 
 % define the test model
 toyModel = struct;
@@ -20,7 +21,7 @@ toyModel.c = [0 ; 0 ; 0];
 modelNew = changeObjective(toyModel, 'Rxn1');
 assert(modelNew.c(1) == 1 && modelNew.c(2) == 0 && modelNew.c(3) == 0)
 
-% test that error is thrown if objective rnx not in model
+% test that error is thrown if objective Rxn4 not in model
 try
     modelNew = changeObjective(toyModel, 'Rxn4');
 catch ME
@@ -36,4 +37,4 @@ modelNew = changeObjective(toyModel,{'Rxn1'; 'Rxn2'},[0.3 ; 0.7]);
 assert(modelNew.c(1) == 0.3 && modelNew.c(2) == 0.7 && modelNew.c(3) == 0)
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

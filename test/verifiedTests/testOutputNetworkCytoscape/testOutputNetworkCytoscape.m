@@ -8,60 +8,43 @@
 % Author:
 %     - Marouen BEN GUEBILA 09/02/2017
 
-% define global paths
-global path_TOMLAB
+global CBTDIR
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testOutputNetworkCytoscape']);
+% initialize the test
+fileDir = fileparts(which('testOutputNetworkCytoscape'));
+cd(fileDir);
 
-load('ecoli_core_model', 'model');
+load([CBTDIR, filesep, 'test' filesep 'models' filesep 'ecoli_core_model.mat'], 'model');
 
-%test solver packages
-solverPkgs = {'tomlab_cplex'};%,'ILOGcomplex'};
+%call function
+notShownMets = outputNetworkCytoscape(model, 'data', model.rxns, [], model.mets, [], 100);
 
-for k = 1:length(solverPkgs)
-    fprintf('   Testing outputNetworkCytoscape using %s ... ', solverPkgs{k});
+testFiles = {'test.sif', 'test_edgeType.noa', 'test_nodeComp.noa', 'test_nodeType.noa', 'test_subSys.noa'};
 
-    % add the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        addpath(genpath(path_TOMLAB));
-    end
+%call test
+for j = 1:length(testFiles)
+    str = testFiles{j};
 
-    %call function
-    notShownMets = outputNetworkCytoscape(model, 'data', model.rxns, [], model.mets, [], 100);
+    %load test data
+    fileID = fopen(str, 'r');
+    testData = fscanf(fileID, '%s');
+    fclose(fileID);
 
-    testFiles = {'test.sif', 'test_edgeType.noa', 'test_nodeComp.noa', 'test_nodeType.noa', 'test_subSys.noa'};
+    %save produced data
+    str2 = strrep(str, 'test', 'data');
+    fileID = fopen(str2, 'r');
+    Data = fscanf(fileID, '%s');
+    fclose(fileID);
 
-    %call test
-    for j = 1:length(testFiles)
-        str = testFiles{j};
+    %compare with produced data
+    assert(isequal(testData,Data));
 
-        %load test data
-        fileID = fopen(str, 'r');
-        testData = fscanf(fileID, '%s');
-        fclose(fileID);
-
-        %save produced data
-        str2 = strrep(str, 'test', 'data');
-        fileID = fopen(str2, 'r');
-        Data = fscanf(fileID, '%s');
-        fclose(fileID);
-
-        %compare with produced data
-        assert(isequal(testData,Data));
-
-        %delete file
-        delete(str2);
-    end
-
-    % remove the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        rmpath(genpath(path_TOMLAB));
-    end
+    %delete file
+    delete(str2);
 end
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

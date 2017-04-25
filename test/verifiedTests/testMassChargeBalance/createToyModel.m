@@ -26,6 +26,7 @@ function model = createToyModel(unknownMetabolite, unbalancedCharge,imbalancedRe
 %                       and a charge of -2
 %
 % v1  Thomas Pfau 09/02/2017
+
 model.S = sparse([-1 -1 -1 0 0; 0 1 0 -1 0; 0 0 1 -1 0; 0 0 0 1 -1]);
 
 model.mets = {'A[c]', 'B[c]', 'C[c]', 'D[c]'}';
@@ -36,8 +37,8 @@ model.metFormulas = {'CHO', 'CHO', 'CHO', 'C2H2O2'};
 model.metCharges = [-1, -1, -1, -2]';
 model.b = [0, 0, 0, 0]';
 model.c = [0, 0, 0, 0, 1]';
-model.lb = [ -1000, 0, 0, 0, 0];
-model.ub = [ 0, 1000, 1000, 1000, 1000];
+model.lb = [ -1000, 0, 0, 0, 0]';
+model.ub = [ 0, 1000, 1000, 1000, 1000]';
 model.metNames = strrep(model.mets, '[c]', '');
 model.genes = {'G1', 'G2'}';
 model.rules = {'', '', 'x(1) & x(2)', 'x(2) | x(1)', ''}';

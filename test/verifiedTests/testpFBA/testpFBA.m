@@ -13,15 +13,12 @@
 % Note:
 %     - The solver libraries must be included separately
 
-% define global paths
-global path_TOMLAB
-global path_GUROBI
+% save the current path
+currentDir = pwd;
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
-
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testpFBA']);
+% initialize the test
+fileDir = fileparts(which('testpFBA'));
+cd(fileDir);
 
 %tolerance
 tol = 1e-8;
@@ -35,26 +32,18 @@ objModel = load('testpFBAData.mat', 'modelIrrev_glc1', 'modelIrrev_glc0', 'model
 % list of solver packages
 solverPkgs = {'tomlab_cplex', 'gurobi6', 'glpk'};
 
+% create a parallel pool
+poolobj = gcp('nocreate'); % if no pool, do not create new one.
+if isempty(poolobj)
+    parpool(2); % launch 2 workers
+end
+
 for k = 1:length(solverPkgs)
     fprintf(' -- Running testfindBlockedReaction using the solver interface: %s ... ', solverPkgs{k});
 
-    % add the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        addpath(genpath(path_TOMLAB));
-    elseif strcmp(solverPkgs{k}, 'gurobi6')
-        addpath(genpath(path_GUROBI));
-    end
-
-    solverLPOK = changeCobraSolver(solverPkgs{k});
+    solverLPOK = changeCobraSolver(solverPkgs{k}, 'LP', 0);
 
     if solverLPOK
-
-        % create a parallel pool with 2 workers
-        poolobj = gcp('nocreate'); % if no pool, do not create new one.
-        if isempty(poolobj)
-            % launch 2 workers
-            parpool(2);
-        end
 
         % run pFBA
         fprintf('\n*** Test basic pFBA calculations ***\n\n');
@@ -136,17 +125,10 @@ for k = 1:length(solverPkgs)
 
         x = min([t_fm; t_fg; t_fr]);
 
-        % remove the solver paths (temporary addition for CI)
-        if strcmp(solverPkgs{k}, 'tomlab_cplex')
-            rmpath(genpath(path_TOMLAB));
-        elseif strcmp(solverPkgs{k}, 'gurobi6')
-            rmpath(genpath(path_GUROBI));
-        end
-
         % output a success message
         fprintf('Done.\n');
     end
 end
 
 % change back to the root directory
-cd(CBTDIR);
+cd(currentDir)

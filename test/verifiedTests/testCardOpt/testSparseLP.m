@@ -6,18 +6,13 @@
 % Authors:
 %     - CI integration: Laurent Heirendt March 2017
 %
-% Note:
-%     - The solver libraries must be included separately
 
-% define global paths
-global path_TOMLAB
-global path_GUROBI
+% save the current path
+currentDir = pwd;
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
-
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testCardOpt']);
+% initialize the test
+fileDir = fileparts(which('testSparseLP'));
+cd(fileDir);
 
 % set the tolerance
 tol = 1e-8;
@@ -30,15 +25,8 @@ approxVect = {'exp', 'cappedL1', 'log', 'SCAD', 'lp-', 'lp+'};
 
 for k = 1:length(solverPkgs)
 
-    % add the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        addpath(genpath(path_TOMLAB));
-    elseif strcmp(solverPkgs{k}, 'gurobi6')
-        addpath(genpath(path_GUROBI));
-    end
-
     % change the COBRA solver (LP)
-    solverOK = changeCobraSolver(solverPkgs{k});
+    solverOK = changeCobraSolver(solverPkgs{k}, 'LP', 0);
 
     if solverOK == 1
         fprintf('   Testing sparseLP using %s ... \n', solverPkgs{k});
@@ -97,14 +85,7 @@ for k = 1:length(solverPkgs)
         % output a success message
         fprintf('Done.\n');
     end
-
-    % remove the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        rmpath(genpath(path_TOMLAB));
-    elseif strcmp(solverPkgs{k}, 'gurobi6')
-        rmpath(genpath(path_GUROBI));
-    end
 end
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

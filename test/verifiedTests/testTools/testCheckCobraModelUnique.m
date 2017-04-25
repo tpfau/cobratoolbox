@@ -1,15 +1,16 @@
-% The COBRAToolbox: checkCobraModelUnique.m
+% The COBRAToolbox: testCheckCobraModelUnique.m
 %
 % Purpose:
 %     - Tests the checkCobraModelUnique function
 % Author:
 %     - Original file: Stefania Magnusdottir
 
-% define the path to The COBRA Toolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testTools'])
+% initialize the test
+fileDir = fileparts(which('testCheckCobraModelUnique'));
+cd(fileDir);
 
 % define the test model
 toyModel = struct;
@@ -37,4 +38,4 @@ assert(isequal(metsReplaced, modelTest.mets));
 assert(isequal(rxnsReplaced, modelTest.rxns));
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

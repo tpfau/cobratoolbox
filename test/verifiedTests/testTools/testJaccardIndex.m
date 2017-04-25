@@ -7,11 +7,12 @@
 %     - Original file: Laurent Heirendt
 %     - CI integration: Laurent Heirendt
 
-% define the path to The COBRA Toolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testTools'])
+% initialize the test
+fileDir = fileparts(which('testJaccardIndex'));
+cd(fileDir);
 
 % define the test vectors
 testVect1 = [0; -1; -2; -3; -4; -5; -6];
@@ -55,4 +56,4 @@ catch ME
 end
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

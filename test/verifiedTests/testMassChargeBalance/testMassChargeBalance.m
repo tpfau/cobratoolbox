@@ -7,14 +7,13 @@
 %     - Original file: Thomas Pfau 09/02/2017
 %     - CI integration: Laurent Heirendt Feburary 2017
 %
-% Note:
-%     - The solver libraries must be included separately
 
-% define the path to The COBRA Toolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testMassChargeBalance'])
+% initialize the test
+fileDir = fileparts(which('testMassChargeBalance'));
+cd(fileDir);
 
 options = logical([0 0 0; 0 0 1; 0 1 0; 0 1 1; 1 0 0; 1 0 1; 1 1 0; 1 1 1]);
 
@@ -62,8 +61,11 @@ fileNames = {'charge_imbalanced_reactions.txt', 'mass_imbalanced_reactions.txt',
 
 for i = 1:length(fileNames)
     % remove the generated files
-    fullFileNamePath = [CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testMassChargeBalance', filesep, fileNames{i}];
+    fullFileNamePath = [fileparts(which(mfilename)), filesep, fileNames{i}];
     if exist(fullFileNamePath, 'file') == 2
         system(['rm ', fullFileNamePath]);
     end
 end
+
+% change the directory
+cd(currentDir)

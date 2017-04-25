@@ -1,4 +1,4 @@
-% The COBRAToolbox: testwritePajekNet.m
+% The COBRAToolbox: testWritePajekNet.m
 %
 % Purpose:
 %     - testwritePajekNet tests the writePajekNet function
@@ -7,16 +7,16 @@
 % Author:
 %     - Marouen BEN GUEBILA 09/02/2017
 
-% define global paths
-global path_TOMLAB
+global CBTDIR
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testwritePajekNet']);
+% initialize the test
+fileDir = fileparts(which('testwritePajekNet'));
+cd(fileDir);
 
-load('ecoli_core_model', 'model');
+load([CBTDIR, filesep, 'test' filesep 'models' filesep 'ecoli_core_model.mat'], 'model');
 
 %test solver packages
 solverPkgs = {'tomlab_cplex'};
@@ -25,13 +25,8 @@ for k = 1:length(solverPkgs)
 
     fprintf('   Testing writePajekNet using %s ... ', solverPkgs{k});
 
-    % add the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        addpath(genpath(path_TOMLAB));
-    end
-
     % change the COBRA solver (LP)
-    solverOK = changeCobraSolver(solverPkgs{k});
+    solverOK = changeCobraSolver(solverPkgs{k}, 'LP', 0);
 
     if solverOK == 1
         %load test data
@@ -53,12 +48,7 @@ for k = 1:length(solverPkgs)
         %delete data
         delete COBRAmodel.net
     end
-
-    % remove the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        rmpath(genpath(path_TOMLAB));
-    end
 end
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

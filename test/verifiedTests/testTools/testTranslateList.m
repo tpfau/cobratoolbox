@@ -8,11 +8,12 @@
 %     - Lemmer El Assal February 2017
 %
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end-(length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testTools']);
+% initialize the test
+fileDir = fileparts(which('testTranslateList'));
+cd(fileDir);
 
 list = {'a', 'b', 'c'};
 trList1 = {'b', 'c'};
@@ -21,4 +22,4 @@ newList = translateList(list, trList1, trList2);
 assert(isequal(newList,{'a', 'B', 'C'}))
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

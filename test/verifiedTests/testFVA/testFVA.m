@@ -8,17 +8,13 @@
 %     - Original file: Joseph Kang 04/27/09
 %     - CI integration: Laurent Heirendt January 2017
 %
-% Note:
-%     - The solver libraries must be included separately
 
-% define global paths
-global path_TOMLAB
+% save the current path
+currentDir = pwd;
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
-
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testFVA'])
+% initialize the test
+fileDir = fileparts(which('testFVA'));
+cd(fileDir);
 
 % set the tolerance
 tol = 1e-8;
@@ -30,23 +26,19 @@ solverPkgs = {'tomlab_cplex', 'glpk'};
 load('Ec_iJR904.mat', 'model');
 load('testFVAData.mat');
 
+% create a parallel pool
+poolobj = gcp('nocreate'); % if no pool, do not create new one.
+if isempty(poolobj)
+    parpool(2); % launch 2 workers
+end
+
 for k = 1:length(solverPkgs)
-    % add the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        addpath(genpath(path_TOMLAB));
-    end
 
     % change the COBRA solver (LP)
-    solverOK = changeCobraSolver(solverPkgs{k});
+    solverOK = changeCobraSolver(solverPkgs{k}, 'LP', 0);
 
     if solverOK == 1
         fprintf('   Testing flux variability analysis using %s ... ', solverPkgs{k});
-
-        poolobj = gcp('nocreate'); % If no pool, do not create new one.
-        if isempty(poolobj)
-            % launch 2 workers
-            parpool(2);
-        end
 
         % launch the flux variability analysis
         [minFluxT, maxFluxT] = fluxVariability(model, 90, 'max', model.rxns, 1);
@@ -80,4 +72,4 @@ for k = 1:length(solverPkgs)
 end
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

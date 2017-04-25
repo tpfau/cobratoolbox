@@ -7,11 +7,12 @@
 %     - Original file: Lemmer El Assal
 %     - CI integration: Laurent Heirendt
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end-(length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testTools']);
+% initialize the test
+fileDir = fileparts(which('testReadMixedData'));
+cd(fileDir);
 
 file = 'testData_readMixedData.txt';
 n_header = 1;
@@ -30,4 +31,4 @@ assert(isequal(ref_header, header))
 assert(isequal(ref_id, id))
 
 % return to original directory
-cd(CBTDIR);
+cd(currentDir);

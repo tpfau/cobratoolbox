@@ -6,14 +6,12 @@
 % Author:
 %     - Marouen BEN GUEBILA - 31/01/2017
 
-% define global paths
-global path_TOMLAB
+% save the current path
+currentDir = pwd;
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
-
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testrFBA']);
+% initialize the test
+fileDir = fileparts(which('testdynamicRFBA'));
+cd(fileDir);
 
 %load model and test data
 load('modelReg.mat');
@@ -25,14 +23,13 @@ solverPkgs = {'tomlab_cplex'};
 QPsolverPkgs = {'tomlab_cplex'};
 
 for k =1:length(solverPkgs)
-    % add the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        addpath(genpath(path_TOMLAB));
-    end
 
-    solverLPOK = changeCobraSolver(solverPkgs{k},'LP');
+    solverLPOK = changeCobraSolver(solverPkgs{k},'LP', 0);
+
     for j=1:length(QPsolverPkgs)%QP solvers
-        solverQPOK = changeCobraSolver(QPsolverPkgs{j},'QP');
+
+        solverQPOK = changeCobraSolver(QPsolverPkgs{j}, 'QP', 0);
+
         if solverLPOK && solverQPOK
             substrateRxns ={'EX_glc(e)' 'EX_ac(e)'};
             initConcentrations = [10.8; 1];
@@ -56,13 +53,8 @@ for k =1:length(solverPkgs)
         end
     end
 
-    % remove the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        rmpath(genpath(path_TOMLAB));
-    end
-
     fprintf('Done.\n');
 end
 
  % change the directory
- cd(CBTDIR)
+ cd(currentDir)

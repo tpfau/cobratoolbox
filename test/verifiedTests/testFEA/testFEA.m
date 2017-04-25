@@ -7,15 +7,18 @@
 % Author:
 %     - Marouen BEN GUEBILA 09/02/2017
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+global CBTDIR
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testFEA']);
+% save the current path
+currentDir = pwd;
+
+% initialize the test
+fileDir = fileparts(which('testFEA'));
+cd(fileDir);
 
 % load the model and reference data
-load testDataFEA;
-load('ecoli_core_model', 'model');
+load('testDataFEA.mat');
+load([CBTDIR, filesep, 'test' filesep 'models' filesep 'ecoli_core_model.mat'], 'model');
 
 % run FEA
 resultCellFtest = FEA(model, 1:10, 'subSystems');
@@ -45,4 +48,4 @@ catch ME
 end
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

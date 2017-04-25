@@ -1,15 +1,16 @@
-% The COBRAToolbox: changeRxnBounds.m
+% The COBRAToolbox: testChangeRxnBounds.m
 %
 % Purpose:
 %     - Tests the changeRxnBounds function
 % Author:
 %     - Original file: Stefania Magnusdottir
 
-% define the path to The COBRA Toolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testModelManipulation'])
+% initialize the test
+fileDir = fileparts(which('testChangeRxnBounds'));
+cd(fileDir);
 
 % define the test model
 toyModel = struct;
@@ -73,4 +74,4 @@ catch ME
 end
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

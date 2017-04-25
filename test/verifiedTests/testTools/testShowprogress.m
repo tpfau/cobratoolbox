@@ -6,11 +6,12 @@
 % Author:
 %     - Laurent Heirendt - March 2017
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end-(length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testTools']);
+% initialize the test
+fileDir = fileparts(which('testShowprogress'));
+cd(fileDir);
 
 global WAITBAR_TYPE
 
@@ -45,4 +46,4 @@ else
 end
 
 %return to original directory
-cd(CBTDIR);
+cd(currentDir);

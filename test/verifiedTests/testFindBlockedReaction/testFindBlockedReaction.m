@@ -10,42 +10,34 @@
 %
 % Note: ibm_cplex is not (yet) compatible with R2016b
 
-% define global paths
-global path_TOMLAB
-global path_GUROBI
+global CBTDIR
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testFindBlockedReaction'])
+% initialize the test
+fileDir = fileparts(which('testfindBlockedReaction'));
+cd(fileDir);
 
-load('ecoli_core_model.mat', 'model');
+load([CBTDIR, filesep, 'test' filesep 'models' filesep 'ecoli_core_model.mat'], 'model');
 
 ecoli_blckd_rxn = {'EX_fru(e)', 'EX_fum(e)', 'EX_gln_L(e)', 'EX_mal_L(e)', ...
                    'FRUpts2', 'FUMt2_2', 'GLNabc', 'MALt2_2'};
 
 % list of solver packages
-solverPkgs = {'tomlab_cplex', 'gurobi', 'glpk'};
+solverPkgs = {'tomlab_cplex', 'gurobi6', 'glpk'};
 
-poolobj = gcp('nocreate'); % If no pool, do not create new one.
+% create a parallel pool
+poolobj = gcp('nocreate'); % if no pool, do not create new one.
 if isempty(poolobj)
-    % launch 2 workers
-    parpool(2);
+    parpool(2); % launch 2 workers
 end
 
 for k = 1:length(solverPkgs)
 
     fprintf(' -- Running testfindBlockedReaction using the solver interface: %s ... ', solverPkgs{k});
 
-    % add the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        addpath(genpath(path_TOMLAB));
-    elseif strcmp(solverPkgs{k}, 'gurobi6')
-        addpath(genpath(path_GUROBI));
-    end
-
-    solverLPOK = changeCobraSolver(solverPkgs{k});
+    solverLPOK = changeCobraSolver(solverPkgs{k}, 'LP', 0);
 
     if solverLPOK
 
@@ -68,16 +60,9 @@ for k = 1:length(solverPkgs)
         end
     end
 
-    % remove the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        rmpath(genpath(path_TOMLAB));
-    elseif strcmp(solverPkgs{k}, 'gurobi6')
-        rmpath(genpath(path_GUROBI));
-    end
-
     % output a success message
     fprintf('Done.\n');
 end
 
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

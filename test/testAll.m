@@ -1,7 +1,8 @@
 % define global paths
-global path_GUROBI
-global path_ILOG_CPLEX
-global path_TOMLAB
+global CBTDIR
+global GUROBI_PATH
+global ILOG_CPLEX_PATH
+global TOMLAB_PATH
 
 % do not change the paths below
 if ~isempty(strfind(getenv('HOME'), 'jenkins'))
@@ -12,6 +13,7 @@ end
 % include the root folder and all subfolders
 addpath(genpath(pwd))
 
+% if the location of initCobraToolbox is not yet known
 if length(which('initCobraToolbox.m')) == 0
     % define the path to The COBRA Toolbox
     pth = which('testAll.m');
@@ -24,8 +26,13 @@ if length(which('initCobraToolbox.m')) == 0
     addpath(genpath(pwd));
 end
 
+CBTDIR = fileparts(which('initCobraToolbox.m'));
+
+% change to the root folder of The COBRA TOolbox
+cd(CBTDIR);
+
 % run the official initialisation script
-initCobraToolbox
+initCobraToolbox;
 
 if ~isempty(strfind(getenv('HOME'), 'jenkins'))
     WAITBAR_TYPE = 0;
@@ -38,6 +45,81 @@ exit_code = 0;
 
 % enable profiler
 profile on;
+
+if ~isempty(strfind(getenv('HOME'), 'jenkins'))
+
+    % ignore list of files
+    ignoreFiles = {'./src/fluxomics/c13solver/IsotopomerModel.txt',
+                   './src/fluxomics/c13solver/convertCarbonInput.m',
+                   './src/fluxomics/c13solver/slvrCumomer.m',
+                   './src/fluxomics/c13solver/slvrCumomer_fast.m',
+                   './src/fluxomics/c13solver/slvrEMU.m',
+                   './src/fluxomics/c13solver/slvrEMU_fast.m'};
+
+    % check the code quality
+    listFiles = rdir(['./src', '/**/*.m']);
+
+    % count the number of failed code quality checks per file
+    nMsgs = 0;
+    nCodeLines = 0;
+    nEmptyLines = 0;
+    nCommentLines = 0;
+
+    for i = 1:length(listFiles)
+        nMsgs = nMsgs + length(checkcode(listFiles(i).name));
+
+        fid = fopen(listFiles(i).name);
+
+        % check if the file is on the ignored list
+        countFlag = true;
+        for k = 1:length(ignoreFiles)
+            if strcmp(listFiles(i).name, ignoreFiles{k})
+                countFlag = false;
+            end
+        end
+
+        while ~feof(fid) && countFlag
+            lineOfFile = strtrim(fgetl(fid));
+            if length(lineOfFile) > 0 && length(strfind(lineOfFile(1), '%')) ~= 1  ...
+               && length(strfind(lineOfFile, 'end')) ~= 1 && length(strfind(lineOfFile, 'otherwise')) ~= 1 ...
+               && length(strfind(lineOfFile, 'switch')) ~= 1 && length(strfind(lineOfFile, 'else')) ~= 1  ...
+               && length(strfind(lineOfFile, 'case')) ~= 1 && length(strfind(lineOfFile, 'function')) ~= 1
+                nCodeLines = nCodeLines + 1;
+
+            elseif length(lineOfFile) == 0
+                nEmptyLines = nEmptyLines + 1;
+
+            elseif length(strfind(lineOfFile(1), '%')) == 1
+                nCommentLines = nCommentLines + 1;
+            end
+        end
+        fclose(fid);
+    end
+
+    % average number of messages per codeLines
+    avMsgsPerc = floor(nMsgs / nCodeLines * 100 );
+
+    grades = {'A', 'B', 'C', 'D', 'E', 'F'};
+    intervals = [0, 3;
+                 3, 6;
+                 6, 9;
+                 9, 12;
+                 12, 15;
+                 15, 100];
+
+    grade = 'F';
+    for i = 1:length(intervals)
+        if avMsgsPerc >= intervals(i, 1) && avMsgsPerc < intervals(i, 2)
+            grade = grades{i};
+        end
+    end
+
+    % remove the old badge
+    system('rm /var/lib/jenkins/userContent/codegrade.svg');
+
+    % set the new badge
+    system(['cp /var/lib/jenkins/userContent/codegrade-', grade, '.svg /var/lib/jenkins/userContent/codegrade.svg']);
+end
 
 try
     % retrieve the models first
@@ -89,7 +171,9 @@ try
     end
 
     % ensure that we ALWAYS call exit
-    exit(exit_code);
+    if ~isempty(strfind(getenv('HOME'), 'jenkins'))
+        exit(exit_code);
+    end
 catch
     exit(1);
 end

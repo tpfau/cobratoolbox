@@ -6,15 +6,12 @@
 % Author:
 %     - Marouen BEN GUEBILA - 31/01/2017
 
+% save the current path
+currentDir = pwd;
 
-% define global paths
-global path_TOMLAB
-
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end - (length('initCobraToolbox.m') + 1));
-
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testrFBA']);
+% initialize the test
+fileDir = fileparts(which('testSolveBooleanRegModel'));
+cd(fileDir);
 
 % solver packages
 solverPkgs = {'tomlab_cplex'};
@@ -24,12 +21,9 @@ load('modelReg.mat');
 load('refData_solveBooleanRegModel.mat');
 
  for k = 1:length(solverPkgs)
-    % add the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        addpath(genpath(path_TOMLAB));
-    end
 
-    solverLPOK = changeCobraSolver(solverPkgs{k});
+    solverLPOK = changeCobraSolver(solverPkgs{k}, 'LP', 0);
+
     if solverLPOK
          %Assert
         [rFBAsol2test,finalInputs1Statestest,finalInputs2Statestest] = solveBooleanRegModel(modelReg,rFBAsol1,inputs1state,inputs2state);
@@ -38,14 +32,8 @@ load('refData_solveBooleanRegModel.mat');
         assert(isequal(finalInputs2Statestest,finalInputs2States))
     end
 
-    % remove the solver paths (temporary addition for CI)
-    if strcmp(solverPkgs{k}, 'tomlab_cplex')
-        rmpath(genpath(path_TOMLAB));
-    end
-
     fprintf('Done.\n');
  end
 
-
  % change the directory
- cd(CBTDIR)
+ cd(currentDir)

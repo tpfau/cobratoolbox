@@ -8,11 +8,12 @@
 %     - Lemmer El Assal February 2017
 %
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end-(length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-initTest([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testTools']);
+% initialize the test
+fileDir = fileparts(which('testParseBoolean'));
+cd(fileDir);
 
 str = '((A&B)|(B&C))&(~D)';
 tokens = '&!()';
@@ -43,5 +44,18 @@ assert(rxnGeneMat(1,2) == 1)
 assert(rxnGeneMat(1,3) == 1)
 assert(rxnGeneMat(1,4) == 1)
 
+% test parseBoolean with str and 3 output arguments - throws a warning message
+warning('off', 'all')
+[elements, newRule, rxnGeneMat] = parseBoolean(str, tokens);
+assert(length(lastwarn()) > 0)
+warning('on', 'all')
+
+% test parseBoolean with a random input argument
+try
+    [elements, newRule] = parseBoolean(0);
+catch ME
+    assert(length(ME.message) > 0)
+end
+
 % change the directory
-cd(CBTDIR)
+cd(currentDir)

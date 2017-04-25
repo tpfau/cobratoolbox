@@ -7,11 +7,12 @@
 %     - Lemmer El Assal February 2017
 %
 
-% define the path to The COBRAToolbox
-pth = which('initCobraToolbox.m');
-CBTDIR = pth(1:end-(length('initCobraToolbox.m') + 1));
+% save the current path
+currentDir = pwd;
 
-cd([CBTDIR, filesep, 'test', filesep, 'verifiedTests', filesep, 'testTools']);
+% initialize the test
+fileDir = fileparts(which('testSelMatrix'));
+cd(fileDir);
 
 % load reference data
 load('refData_selMatrix.mat');
@@ -22,4 +23,4 @@ assert(isequal(selMat1, ref_selMat1))
 assert(isequal(selMat2, ref_selMat2))
 
 %return to original directory
-cd(CBTDIR);
+cd(currentDir);
