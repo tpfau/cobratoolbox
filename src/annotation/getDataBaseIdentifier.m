@@ -25,6 +25,21 @@ global GET_DATABASEID_TESTING
 global GET_DATABASEID_TESTING_POSITIONINPUT
 global GET_DATABASEID_TESTING_LABELINPUT
 
+%This could be either a session specific field, or we could try to save and
+%retrieve it in each session (with an option to clear the db).
+persistent annotationDBs
+persistent annotationDBPatterns
+
+%Init them if they are empty (could be reading from a file, and we could
+%allow reset of individual mappings.
+if isempty(annotationDBs)
+    annotationDBs = containers.Map;    
+end
+if isempty(annotationDBPatterns)
+    annotationDBPatterns= containers.Map;    
+end
+
+
 %If there is no information in the database, its ID is empty.
 if isempty(databaseid)
     database = '';
@@ -32,10 +47,14 @@ if isempty(databaseid)
     return
 end
 
+%If the key is stored, just return it. 
+if annotationDBs.iskey(databaseid)
+    database = annotationDBs(databaseid);
+    pattern = annotationDBPatterns(databaseid);
+    return
+end
+
 specialDataBases = {'kegg','metanetx'};
-
-
-
 
 annotOptionsStruct = getAnnotationOptions( 'returnFieldNames', 1,'returnOptions',1);
 AnnotOptions = [annotOptionsStruct.fieldNames, annotOptionsStruct.fieldOptions];

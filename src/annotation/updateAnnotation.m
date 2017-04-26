@@ -60,8 +60,6 @@ global UPDATE_ANNOTATION_TESTING_FAILFIELD
 global UPDATE_ANNOTATION_USERINPUTFAILFIELD
 global UPDATE_ANNOTATION_USERINPUTSUCCESSFIELD
 
-
-
 AnnotationOptions = getAnnotationOptions('returnOptions',1,'returnFieldNames',1);
 AnnotationOptions = [AnnotationOptions.fieldOptions, AnnotationOptions.fieldNames, {'automatic'}];
 p = inputParser;
