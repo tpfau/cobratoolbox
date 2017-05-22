@@ -17,33 +17,34 @@ function [TrspRxns] = findTrspRxnFromMet(model, metList, compFlag)
 %    TrspRxns:    List of transporters reactions
 %
 % .. Author: - Anne Richelle May 2017
+%            - Speedup and catching Phosphorylating Transports - Thomas Pfau 2017
 
 if nargin < 3
     compFlag={};
 end
 
-TrspRxns={};
-for i=1:numel(metList)
+%Get the metabolites with the given compFlag
+if ~isempty(compFlag)
+    metNames = regexprep(metList,'\[[^\]]+\]$','');
+    metNames = unique(metNames);    
+    relmets = logical(zeros(size(model.S,1),1));
+    for i = 1:numel(compFlag)
+        relmets = logical | ismember(model.mets,strcat(metNames,['[',CompFlag{i},']']));
+    end
+else
+    relmets = ismember(model.mets,metList);
+end
 
-    formulas={};
-    Name_met=metList{i};
+[compartments,uniqueCompartments]=getCompartment(model.mets);  
+transportRxnBool = logical(zeros(size(model.S,2),1));
 
-    % Find the reactions involving the metabolite
-    rxnsMets=findRxnsFromMets(model,Name_met);
-    formulas = printRxnFormula(model,rxnsMets,false);
-
-    for j=1:numel(formulas)
-        metaboliteList = parseRxnFormula(formulas{j});
-        [baseMetNames,compSymbols,uniqueMetNames,uniqueCompSymbols] = parseMetNames(metaboliteList);
-
-        if sum(strcmp(baseMetNames,[Name_met(1:end-3)]))== 2 && sum(strcmp(uniqueMetNames,[Name_met(1:end-3)]))== 1
-            if ~isempty(compFlag)
-                if sum(strcmp(uniqueCompSymbols,compFlag))== 1
-                    TrspRxns(end+1)=rxnsMets(j);
-                end
-            else
-                TrspRxns(end+1)=rxnsMets(j);
-            end
-        end
+for n=1:size(model.S,2)
+    rxnCompartments=compartments(model.S(:,n)~=0 & relmets);
+    %should also omit exchange reactions
+    if length(unique(rxnCompartments))>1
+        transportRxnBool(n,1)=true;
     end
 end
+
+
+TrspRxns = model.rxns(transportRxnBool);
