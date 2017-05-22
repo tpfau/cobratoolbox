@@ -23,25 +23,28 @@ if nargin < 3
     compFlag={};
 end
 
+[compartments,uniqueCompartments]=getCompartment(model.mets);  
+
 %Get the metabolites with the given compFlag
-if ~isempty(compFlag)
-    metNames = regexprep(metList,'\[[^\]]+\]$','');
-    metNames = unique(metNames);    
-    relmets = logical(zeros(size(model.S,1),1));
-    for i = 1:numel(compFlag)
-        relmets = logical | ismember(model.mets,strcat(metNames,['[',CompFlag{i},']']));
-    end
-else
-    relmets = ismember(model.mets,metList);
+metNames = regexprep(metList,'\[[^\]]+\]$','');
+metNames = unique(metNames);    
+relmets = logical(zeros(size(model.S,1),1));
+if isempty(compFlag)
+    compFlag = uniqueCompartments;
 end
 
-[compartments,uniqueCompartments]=getCompartment(model.mets);  
+%Extends the metNames
+for i = 1:numel(uniqueCompartments)
+    relmets = relmets | ismember(model.mets,strcat(metNames,['[',uniqueCompartments{i},']']));
+end
+
 transportRxnBool = logical(zeros(size(model.S,2),1));
 
 for n=1:size(model.S,2)
-    rxnCompartments=compartments(model.S(:,n)~=0 & relmets);
-    %should also omit exchange reactions
-    if length(unique(rxnCompartments))>1
+    %we only look at the compartments of relevant reactions. And whether
+    %they are part of the requested compartments
+    relCompartments=unique(compartments(model.S(relmets,n)~=0));
+    if (length(relCompartments) > 1) && any(ismember(relCompartments,compFlag))
         transportRxnBool(n,1)=true;
     end
 end
