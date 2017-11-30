@@ -58,7 +58,7 @@ multiAdd = false;
 if ~all(size(rxnList) > 1) %if this is true, its multiple rows...    
     if (length(d) > 1) %This should be a multiAdd
         dim = length(d) == size(rxnList);
-        multiAdd = true
+        multiAdd = true;
         if ~all(dim)
             %make sure this is the right orientation
              cdim = find(dim);
@@ -69,6 +69,11 @@ if ~all(size(rxnList) > 1) %if this is true, its multiple rows...
             error('d has to be either a single value or a vector of doubles');
         end                
     else
+        %there is only one element in d and rxnList has a dimension of size
+        %1. So we need to make sure, that rxnList is a row vector.
+        if size(rxnList,1) > size(rxnList,2)
+            rxnList = rxnList';
+        end        
         if ~(length(rxnList) == length(unique(rxnList))) 
             error('There were duplicate reaction IDs or positions provided. No Constraint will be added.');        
         end
