@@ -161,15 +161,14 @@ try
 
     sumFailed = 0;
     sumIncomplete = 0;
-
+    resulttable = result.table;
+    resulttable(:,'Details') = {''};
     for i = 1:size(result, 2)
         sumFailed = sumFailed + result(i).Failed;
         sumIncomplete = sumIncomplete + result(i).Incomplete;
         if result(i).Failed
             Message = result(i).Details.DiagnosticRecord.Exception.message;
-            [~,fileName] = fileparts(result(i).Name);
-            testID = regexprep(fileName,'^test',''); %remove leading test            
-            fprintf('Testing %i failed because of the following problem:\n%s\n\n', result(i).Name,Message);
+            resulttable{i,'Details'} = {Message};            
         end
     end
 
@@ -207,8 +206,8 @@ try
     end
 
     % print out a summary table
-    table(result)
-
+    resulttable
+    
     % restore the original path
     restoredefaultpath;
     addpath(originalUserPath);
