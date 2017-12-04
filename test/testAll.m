@@ -165,6 +165,12 @@ try
     for i = 1:size(result, 2)
         sumFailed = sumFailed + result(i).Failed;
         sumIncomplete = sumIncomplete + result(i).Incomplete;
+        if result(i).Failed
+            Message = result(i).Details.DiagnosticRecord.Exception.message;
+            [~,fileName] = fileparts(result(i).Name);
+            testID = regexprep(fileName,'^test',''); %remove leading test            
+            fprintf('Testing %i failed because of the following problem:\n%s\n\n', result(i).Name,Message);
+        end
     end
 
     fprintf(['\n > ', num2str(sumFailed), ' tests failed. ', num2str(sumIncomplete), ' tests are incomplete.\n\n']);
