@@ -64,9 +64,9 @@ for k = 1:length(solverPkgs)
         end
 
         % check results with expected answer.
-        assert(all(abs(MILPsolution.int - [0; 31; 46]) < tol))
-        assert(abs(MILPsolution.obj - 554) < tol)
-        assert(abs(MILPsolution2.obj - 554) < tol)
+        assert(all(abs(MILPsolution.int - [0; 31; 46]) < tol),['Result invalid: ' strjoin(cellfun(@num2str,num2cell(MILPsolution.int),'Uniform',false),';')])
+        assert(abs(MILPsolution.obj - 554) < tol ,['Result invalid: ' strjoin(cellfun(@num2str,num2cell(MILPsolution.obj),'Uniform',false),';')])
+        assert(abs(MILPsolution2.obj - 554) < tol,['Result invalid: ' strjoin(cellfun(@num2str,num2cell(MILPsolution2.obj),'Uniform',false),';')])
 
         if strcmp(solverPkgs{k}, 'ibm_cplex')
             % test IBM-Cplex-specific parameters. Solve with the below parameters changed
@@ -119,7 +119,7 @@ for k = 1:length(solverPkgs)
             warning off
             % test TimeLimit as a gurobi-specific parameter
             sol = solveCobraMILP(MILPproblem, struct('TimeLimit',0));
-            assert(strcmp(sol.origStat, 'TIME_LIMIT'))
+            assert(strcmp(sol.origStat, 'TIME_LIMIT'),'The TIME_LIMIT was not reached')
             % restore previous warning state
             warning(warning_stat)
             
@@ -136,11 +136,11 @@ for k = 1:length(solverPkgs)
             % (if not everything becomes zero after presolve)
             MILPproblem.x0 = zeros(20, 1);
             sol = solveCobraMILP(MILPproblem);
-            assert(isequal(sol.full, MILPproblem.x0));
+            assert(isequal(sol.full, MILPproblem.x0),'Solution is not starting point with 0');
             
             MILPproblem.x0 = ones(20, 1);
             sol = solveCobraMILP(MILPproblem);
-            assert(isequal(sol.full, MILPproblem.x0));
+            assert(isequal(sol.full, MILPproblem.x0),'Solution is not starting point with 1');
             
         end
     end
