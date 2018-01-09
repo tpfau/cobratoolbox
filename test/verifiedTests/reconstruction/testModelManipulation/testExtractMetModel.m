@@ -16,7 +16,7 @@ cd(fileDir);
 
 model = getDistributedModel('Recon2.v04.mat');
 %compare against explicitly loaded models to conserve the ids.
-load('testExtractMetModel.mat', 'emptyModel', 'atpModel', 'pppg9Level0', 'pppg9Level1');
+load('UseOriginalLoad','testExtractMetModel.mat', 'emptyModel', 'atpModel', 'pppg9Level0', 'pppg9Level1');
 
 % Test getting level 0 (just reactions that involve a metaoblite)
 model2 = extractMetModel(model, 'pppg9', 0, 1);

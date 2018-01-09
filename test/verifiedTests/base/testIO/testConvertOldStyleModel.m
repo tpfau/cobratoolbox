@@ -20,7 +20,7 @@ cd(fileDir);
 fprintf('>> Testing Model conversion and field merging:\n');
 %Explicitly load the model by load to ensure that its an old style model
 %that we can convert.
-load('Abiotrophia_defectiva_ATCC_49176','model')
+load('UseOriginalLoad','Abiotrophia_defectiva_ATCC_49176','model')
 
 convertedFields = {'metHMDB','metSmile','metInchiString','confidenceScores','ecNumbers','rxnKeggID','metKeggID'};
 newFields = {'metHMDBID','metSmiles','metInChIString','rxnConfidenceScores','rxnECNumbers','rxnKEGGID','metKEGGID'};
