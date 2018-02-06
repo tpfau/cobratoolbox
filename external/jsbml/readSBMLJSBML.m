@@ -33,7 +33,10 @@ reader = SBMLReader();
 modelSBML = reader.readSBMLFromFile(fileName);
 
 %Determine whether the FBC and group packages are present.
+[fbcVersion, groupsVersion] = getFBCAndgroupsVersions(modelSBML)
 
+if fbcVersion > 0
+    %Lets have a look for the GPR Rules
 
 model = struct();
 model.description = struct();
