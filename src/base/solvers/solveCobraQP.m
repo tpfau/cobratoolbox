@@ -535,7 +535,9 @@ switch solver
                 params.DisplayInterval = 1;
         end
 
-        params.Method = -1;    %-1 = automatic, 0 = primal simplex, 1 = dual simplex, 2 = barrier, 3 = concurrent, 4 = deterministic concurrent
+        if ~isfield(params,'Method')
+           params.Method = -1;    %-1 = automatic, 0 = primal simplex, 1 = dual simplex, 2 = barrier, 3 = concurrent, 4 = deterministic concurrent
+        end
         params.Presolve = -1; % -1 - auto, 0 - no, 1 - conserv, 2 - aggressive
         params.IntFeasTol = feasTol;
         params.FeasibilityTol = feasTol;
