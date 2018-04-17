@@ -1,17 +1,25 @@
 function model = createToyModelForStoichConsist()
-%createToyModelForStoichConsist creates a toy model for
-%Stoichiometric consistency checks
-% The model created looks as follows:
+% createToyModelForStoichConsist creates a toy model for
+% Stoichiometric consistency checks
+%
+% USAGE:
+%    model = createToyModelForStoichConsist()
+%
+% OUTPUT:
+%    model:      A model to test stoichiometric consistency checks.
+%    
+% NOTE:
+%    The model created looks as follows:
 %
 %
-%   <-> A -----> B ---> C --> E <->
-%        \       ^
-%         \     /
-%          -> 2 D 
+%     <-> A -----> B ---> C --> E <->
+%          \       ^
+%           \     /
+%            -> 2 D 
 %           
-% This should be flagged as stoichiometrically inconsistent (in particular,
-% A -> 2 D ; A -> B and D -> B leads to a stoichiometrically inconsistent
-% subset (As A -> 2 B and A -> B are inconsistent, i.e. A, B and D are definitely inconsistent)
+%     This should be flagged as stoichiometrically inconsistent (in particular,
+%     A -> 2 D ; A -> B and D -> B leads to a stoichiometrically inconsistent
+%     subset (As A -> 2 B and A -> B are inconsistent, i.e. A, B and D are definitely inconsistent)
 model = createModel();
 %Reactions in {Rxn Name, MetaboliteNames, Stoichiometric coefficient} format
 Reactions = {'R1',{'A','B'},[-1 1],-1000,1000;...
