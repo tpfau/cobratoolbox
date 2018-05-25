@@ -3978,9 +3978,56 @@ classdef BrendaClient < handle
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromTurnoverNumber'));
             resultString = call.invoke( {parameters} );
             Organisms = self.parseArray(resultString);
-        end
+        end               
         
-        
+        function results = getTurnoverNumber(self,varargin)
+            % getTurnoverNumber according to the BRENDA SOAP api.
+            % USAGE:
+            %    results = BrendaClient.getTurnoverNumber(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - turnoverNumber: The turnoverNumber from the BRENDA database
+            %                   - turnoverNumberMaximum: The turnoverNumberMaximum from the BRENDA database
+            %                   - substrate: The substrate from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
+            % OUTPUT:
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - turnOverNumber: The turnOverNumbers stored in the BRENDA database
+            %                  - turnOverNumberMaximum: The turnOverNumberMaximums stored in the BRENDA database
+            %                  - substrate: The substrates stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('turnoverNumber','',@ischar);
+            parser.addParamValue('turnoverNumberMaximum','',@ischar);
+            parser.addParamValue('substrate','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
+            import javax.xml.namespace.*;
+            call = self.brendaService.createCall();
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
+            call.setOperationName(QName('http://soapinterop.org/', 'getTurnoverNumber'));
+            resultString = call.invoke( {parameters} );
+            results = self.parseStruct(resultString);
+        end 
     end
 end
 
