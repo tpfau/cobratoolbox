@@ -65,11 +65,11 @@ classdef BrendaClient < handle
         function getCall(self)
         end
         
-        function result = parseArray(resultString)
+        function result = parseArray(self, resultString)
             result = strsplit(resultString,'!');
         end
         
-        function result = parseStruct(resultString)
+        function result = parseStruct(self,resultString)
             entries = strsplit(resultString,'!');
             if ~isempty(entries)
                 fields = regexp(entries{1},'(?<fieldID>[^"#!*]*)\*(?<values>[^#$!"]*)','names');
@@ -88,2438 +88,3897 @@ classdef BrendaClient < handle
                 result = struct();
             end
         end
-        function output = getLigandStructureIdByCompoundName(compoundName)
-            % getLigandStructureIdByCompoundName according to the Brenda SOAP api.
+        function parameters = buildParamString(self,Results,Defaults)
+            parameters = {};
+            resultNames = fieldnames(Results);
+            for i = 1:numel(resultNames)
+                if ~any(ismember(resultNames{i},Defaults))
+                    parameters{end+1} = strcat(resultNames{i},'*',Results.(resultNames{i}));
+                end
+            end
+            parameters = strjoin(parameters,'#');
+        end
+        
+        
+        function results = getLigandStructureIdByCompoundName(self,varargin)
+            % getLigandStructureIdByCompoundName according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getLigandStructureIdByCompoundName(compoundName):
+            %    results = BrendaClient.getLigandStructureIdByCompoundName(varargin)
             % INPUTS:
-            %    compoundName:    name of the compund (e.g. Zn2+)
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                   - compoundName:    name of the compound to
+            %                     retrieve the ID for
             % OUTPUT:
-            %    output:    Description
+            %    results:    A cell array of  from the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('compoundName','',@ischar);
+            parser.parse(varargin{:})
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' compoundName];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) , parser.Results.compoundName}, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getLigandStructureIdByCompoundName'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            results = self.parseArray(resultString);
         end
         
         
-        function output = getReferenceById(brendaID)
-            % getReferenceById according to the Brenda SOAP api.
+        function results = getReferenceById(self,varargin)
+            % getReferenceById according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getReferenceById(brendaID):
+            %    results = BrendaClient.getReferenceById(varargin)
             % INPUTS:
-            %    brendaID:    the Brenda ID
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                   - id:    id from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - authors: The authorss stored in the BRENDA database
+            %                  - title: The titles stored in the BRENDA database
+            %                  - journal: The journals stored in the BRENDA database
+            %                  - volume: The volumes stored in the BRENDA database
+            %                  - pages: The pagess stored in the BRENDA database
+            %                  - year: The years stored in the BRENDA database
+            %                  - pubmedId: The pubmedIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('id','',@ischar);
+            parser.parse(varargin{:})
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' brendaID];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) , parser.Results.id}, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getReferenceById'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getReferenceByPubmedId(parameter1)
-            % getReferenceByPubmedId according to the Brenda SOAP api.
+        function results = getReferenceByPubmedId(self,varargin)
+            % getReferenceByPubmedId according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getReferenceByPubmedId(parameter1):
+            %    results = BrendaClient.getReferenceByPubmedId(varargin)
             % INPUTS:
-            %    parameter1:    ParameDescription
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                   - pubmedid:    a valid pubmedid
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - authors: The authorss stored in the BRENDA database
+            %                  - title: The titles stored in the BRENDA database
+            %                  - journal: The journals stored in the BRENDA database
+            %                  - volume: The volumes stored in the BRENDA database
+            %                  - pages: The pagess stored in the BRENDA database
+            %                  - year: The years stored in the BRENDA database
+            %                  - pubmedId: The pubmedIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('pubmedid','',@ischar);
+            parser.parse(varargin{:})
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) , parser.Results.pubmedid}, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getReferenceByPubmedId'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromActivatingCompound()
-            % getEcNumbersFromActivatingCompound according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromActivatingCompound(self, varargin)
+            % getEcNumbersFromActivatingCompound according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromActivatingCompound():
+            %    ECNumbers = BrendaClient.getEcNumbersFromActivatingCompound(varargin)
+            % INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                   - activatingCompound:    a valid activating
+            %                     Compound (e.g. 'rhodamine 123')
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
+            parser=inputParser();
+            parser.addParamValue('activatingCompound','',@ischar);
+            parser.parse(varargin{:})
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
+            parameters = strjoin({self.userName , lower(self.password) ,parameters}, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromActivatingCompound'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromActivatingCompound()
-            % getOrganismsFromActivatingCompound according to the Brenda SOAP api.
+        
+        function Organisms = getOrganismsFromActivatingCompound(self)
+            % getOrganismsFromActivatingCompound according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromActivatingCompound():
+            %    Organisms = BrendaClient.getOrganismsFromActivatingCompound()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromActivatingCompound'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getActivatingCompound(parameter1, parameter2)
-            % getActivatingCompound according to the Brenda SOAP api.
+        function results = getActivatingCompound(self,varargin)
+            % getActivatingCompound according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getActivatingCompound(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getActivatingCompound(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - activatingCompound: The activatingCompound from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - activatingCompound: The activatingCompounds stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('activatingCompound','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getActivatingCompound'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromApplication()
-            % getEcNumbersFromApplication according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromApplication(self)
+            % getEcNumbersFromApplication according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromApplication():
+            %    ECNumbers = BrendaClient.getEcNumbersFromApplication()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromApplication'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromApplication()
-            % getOrganismsFromApplication according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromApplication(self)
+            % getOrganismsFromApplication according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromApplication():
+            %    Organisms = BrendaClient.getOrganismsFromApplication()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromApplication'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getApplication(parameter1, parameter2)
-            % getApplication according to the Brenda SOAP api.
+        function results = getApplication(self,varargin)
+            % getApplication according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getApplication(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getApplication(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - application: The application from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - application: The applications stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('application','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getApplication'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromCasRegistryNumber()
-            % getEcNumbersFromCasRegistryNumber according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromCasRegistryNumber(self)
+            % getEcNumbersFromCasRegistryNumber according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromCasRegistryNumber():
+            %    ECNumbers = BrendaClient.getEcNumbersFromCasRegistryNumber()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromCasRegistryNumber'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getCasRegistryNumber(parameter1)
-            % getCasRegistryNumber according to the Brenda SOAP api.
+        function results = getCasRegistryNumber(self,varargin)
+            % getCasRegistryNumber according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getCasRegistryNumber(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getCasRegistryNumber(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - casRegistryNumber: The casRegistryNumber from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - casRegistryNumber: The casRegistryNumbers stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('casRegistryNumber','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getCasRegistryNumber'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromCloned()
-            % getEcNumbersFromCloned according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromCloned(self)
+            % getEcNumbersFromCloned according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromCloned():
+            %    ECNumbers = BrendaClient.getEcNumbersFromCloned()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromCloned'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromCloned()
-            % getOrganismsFromCloned according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromCloned(self)
+            % getOrganismsFromCloned according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromCloned():
+            %    Organisms = BrendaClient.getOrganismsFromCloned()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromCloned'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getCloned(parameter1, parameter2)
-            % getCloned according to the Brenda SOAP api.
+        function results = getCloned(self,varargin)
+            % getCloned according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getCloned(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getCloned(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getCloned'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromCofactor()
-            % getEcNumbersFromCofactor according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromCofactor(self)
+            % getEcNumbersFromCofactor according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromCofactor():
+            %    ECNumbers = BrendaClient.getEcNumbersFromCofactor()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromCofactor'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromCofactor()
-            % getOrganismsFromCofactor according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromCofactor(self)
+            % getOrganismsFromCofactor according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromCofactor():
+            %    Organisms = BrendaClient.getOrganismsFromCofactor()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromCofactor'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getCofactor(parameter1, parameter2)
-            % getCofactor according to the Brenda SOAP api.
+        function results = getCofactor(self,varargin)
+            % getCofactor according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getCofactor(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getCofactor(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - cofactor: The cofactor from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - cofactor: The cofactors stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('cofactor','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getCofactor'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromCrystallization()
-            % getEcNumbersFromCrystallization according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromCrystallization(self)
+            % getEcNumbersFromCrystallization according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromCrystallization():
+            %    ECNumbers = BrendaClient.getEcNumbersFromCrystallization()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromCrystallization'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromCrystallization()
-            % getOrganismsFromCrystallization according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromCrystallization(self)
+            % getOrganismsFromCrystallization according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromCrystallization():
+            %    Organisms = BrendaClient.getOrganismsFromCrystallization()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromCrystallization'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getCrystallization(parameter1, parameter2)
-            % getCrystallization according to the Brenda SOAP api.
+        function results = getCrystallization(self,varargin)
+            % getCrystallization according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getCrystallization(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getCrystallization(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getCrystallization'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromDisease()
-            % getEcNumbersFromDisease according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromDisease(self)
+            % getEcNumbersFromDisease according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromDisease():
+            %    ECNumbers = BrendaClient.getEcNumbersFromDisease()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromDisease'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getDisease(parameter1)
-            % getDisease according to the Brenda SOAP api.
+        function results = getDisease(self,varargin)
+            % getDisease according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getDisease(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getDisease(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - disease: The disease from the BRENDA database
+            %                   - pubmedId: The pubmedId from the BRENDA database
+            %                   - titlePub: The titlePub from the BRENDA database
+            %                   - category: The category from the BRENDA database
+            %                   - highestConfidenceLevel: The highestConfidenceLevel from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - disease: The diseases stored in the BRENDA database
+            %                  - pubmedId: The pubmedIds stored in the BRENDA database
+            %                  - titlePub: The titlePubs stored in the BRENDA database
+            %                  - category: The categorys stored in the BRENDA database
+            %                  - highestConfidenceLevel: The highestConfidenceLevels stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('disease','',@ischar);
+            parser.addParamValue('pubmedId','',@ischar);
+            parser.addParamValue('titlePub','',@ischar);
+            parser.addParamValue('category','',@ischar);
+            parser.addParamValue('highestConfidenceLevel','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getDisease'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromEcNumber()
-            % getEcNumbersFromEcNumber according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromEcNumber(self)
+            % getEcNumbersFromEcNumber according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromEcNumber():
+            %    ECNumbers = BrendaClient.getEcNumbersFromEcNumber()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromEcNumber'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getEcNumber(parameter1)
-            % getEcNumber according to the Brenda SOAP api.
+        function results = getEcNumber(self,varargin)
+            % getEcNumber according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumber(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getEcNumber(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - commentary: The commentary from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumber'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromEngineering()
-            % getEcNumbersFromEngineering according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromEngineering(self)
+            % getEcNumbersFromEngineering according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromEngineering():
+            %    ECNumbers = BrendaClient.getEcNumbersFromEngineering()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromEngineering'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromEngineering()
-            % getOrganismsFromEngineering according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromEngineering(self)
+            % getOrganismsFromEngineering according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromEngineering():
+            %    Organisms = BrendaClient.getOrganismsFromEngineering()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromEngineering'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getEngineering(parameter1, parameter2)
-            % getEngineering according to the Brenda SOAP api.
+        function results = getEngineering(self,varargin)
+            % getEngineering according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEngineering(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getEngineering(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - engineering: The engineering from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - engineering: The engineerings stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('engineering','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getEngineering'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromEnzymeNames()
-            % getEcNumbersFromEnzymeNames according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromEnzymeNames(self)
+            % getEcNumbersFromEnzymeNames according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromEnzymeNames():
+            %    ECNumbers = BrendaClient.getEcNumbersFromEnzymeNames()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromEnzymeNames'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getEnzymeNames(parameter1)
-            % getEnzymeNames according to the Brenda SOAP api.
+        function results = getEnzymeNames(self,varargin)
+            % getEnzymeNames according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEnzymeNames(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getEnzymeNames(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - synonyms: The synonyms from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - synonyms: The synonymss stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('synonyms','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getEnzymeNames'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromGeneralStability()
-            % getEcNumbersFromGeneralStability according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromGeneralStability(self)
+            % getEcNumbersFromGeneralStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromGeneralStability():
+            %    ECNumbers = BrendaClient.getEcNumbersFromGeneralStability()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromGeneralStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromGeneralStability()
-            % getOrganismsFromGeneralStability according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromGeneralStability(self)
+            % getOrganismsFromGeneralStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromGeneralStability():
+            %    Organisms = BrendaClient.getOrganismsFromGeneralStability()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromGeneralStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getGeneralStability(parameter1, parameter2)
-            % getGeneralStability according to the Brenda SOAP api.
+        function results = getGeneralStability(self,varargin)
+            % getGeneralStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getGeneralStability(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getGeneralStability(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - generalStability: The generalStability from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - generalStability: The generalStabilitys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('generalStability','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getGeneralStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromIc50Value()
-            % getEcNumbersFromIc50Value according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromIc50Value(self)
+            % getEcNumbersFromIc50Value according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromIc50Value():
+            %    ECNumbers = BrendaClient.getEcNumbersFromIc50Value()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromIc50Value'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromIc50Value()
-            % getOrganismsFromIc50Value according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromIc50Value(self)
+            % getOrganismsFromIc50Value according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromIc50Value():
+            %    Organisms = BrendaClient.getOrganismsFromIc50Value()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromIc50Value'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getIc50Value(parameter1, parameter2)
-            % getIc50Value according to the Brenda SOAP api.
+        function results = getIc50Value(self,varargin)
+            % getIc50Value according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getIc50Value(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getIc50Value(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - ic50Value: The ic50Value from the BRENDA database
+            %                   - ic50ValueMaximum: The ic50ValueMaximum from the BRENDA database
+            %                   - inhibitor: The inhibitor from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - icValue: The icValues stored in the BRENDA database
+            %                  - icValueMaximum: The icValueMaximums stored in the BRENDA database
+            %                  - inhibitor: The inhibitors stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('ic50Value','',@ischar);
+            parser.addParamValue('ic50ValueMaximum','',@ischar);
+            parser.addParamValue('inhibitor','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getIc50Value'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromInhibitors()
-            % getEcNumbersFromInhibitors according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromInhibitors(self)
+            % getEcNumbersFromInhibitors according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromInhibitors():
+            %    ECNumbers = BrendaClient.getEcNumbersFromInhibitors()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromInhibitors'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromInhibitors()
-            % getOrganismsFromInhibitors according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromInhibitors(self)
+            % getOrganismsFromInhibitors according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromInhibitors():
+            %    Organisms = BrendaClient.getOrganismsFromInhibitors()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromInhibitors'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getInhibitors(parameter1, parameter2)
-            % getInhibitors according to the Brenda SOAP api.
+        function results = getInhibitors(self,varargin)
+            % getInhibitors according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getInhibitors(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getInhibitors(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - inhibitors: The inhibitors from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - inhibitors: The inhibitorss stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('inhibitors','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getInhibitors'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromKcatKmValue()
-            % getEcNumbersFromKcatKmValue according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromKcatKmValue(self)
+            % getEcNumbersFromKcatKmValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromKcatKmValue():
+            %    ECNumbers = BrendaClient.getEcNumbersFromKcatKmValue()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromKcatKmValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromKcatKmValue()
-            % getOrganismsFromKcatKmValue according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromKcatKmValue(self)
+            % getOrganismsFromKcatKmValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromKcatKmValue():
+            %    Organisms = BrendaClient.getOrganismsFromKcatKmValue()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromKcatKmValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getKcatKmValue(parameter1, parameter2)
-            % getKcatKmValue according to the Brenda SOAP api.
+        function results = getKcatKmValue(self,varargin)
+            % getKcatKmValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getKcatKmValue(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getKcatKmValue(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - kcatKmValue: The kcatKmValue from the BRENDA database
+            %                   - kcatKmValueMaximum: The kcatKmValueMaximum from the BRENDA database
+            %                   - substrate: The substrate from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - kcatKmValue: The kcatKmValues stored in the BRENDA database
+            %                  - kcatKmValueMaximum: The kcatKmValueMaximums stored in the BRENDA database
+            %                  - substrate: The substrates stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('kcatKmValue','',@ischar);
+            parser.addParamValue('kcatKmValueMaximum','',@ischar);
+            parser.addParamValue('substrate','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getKcatKmValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromKiValue()
-            % getEcNumbersFromKiValue according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromKiValue(self)
+            % getEcNumbersFromKiValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromKiValue():
+            %    ECNumbers = BrendaClient.getEcNumbersFromKiValue()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromKiValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromKiValue()
-            % getOrganismsFromKiValue according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromKiValue(self)
+            % getOrganismsFromKiValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromKiValue():
+            %    Organisms = BrendaClient.getOrganismsFromKiValue()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromKiValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getKiValue(parameter1, parameter2)
-            % getKiValue according to the Brenda SOAP api.
+        function results = getKiValue(self,varargin)
+            % getKiValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getKiValue(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getKiValue(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - kiValue: The kiValue from the BRENDA database
+            %                   - kiValueMaximum: The kiValueMaximum from the BRENDA database
+            %                   - inhibitor: The inhibitor from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - kiValue: The kiValues stored in the BRENDA database
+            %                  - kiValueMaximum: The kiValueMaximums stored in the BRENDA database
+            %                  - inhibitor: The inhibitors stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('kiValue','',@ischar);
+            parser.addParamValue('kiValueMaximum','',@ischar);
+            parser.addParamValue('inhibitor','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getKiValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromKmValue()
-            % getEcNumbersFromKmValue according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromKmValue(self)
+            % getEcNumbersFromKmValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromKmValue():
+            %    ECNumbers = BrendaClient.getEcNumbersFromKmValue()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromKmValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromKmValue()
-            % getOrganismsFromKmValue according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromKmValue(self)
+            % getOrganismsFromKmValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromKmValue():
+            %    Organisms = BrendaClient.getOrganismsFromKmValue()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromKmValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getKmValue(parameter1, parameter2)
-            % getKmValue according to the Brenda SOAP api.
+        function results = getKmValue(self,varargin)
+            % getKmValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getKmValue(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getKmValue(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - kmValue: The kmValue from the BRENDA database
+            %                   - kmValueMaximum: The kmValueMaximum from the BRENDA database
+            %                   - substrate: The substrate from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - kmValue: The kmValues stored in the BRENDA database
+            %                  - kmValueMaximum: The kmValueMaximums stored in the BRENDA database
+            %                  - substrate: The substrates stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('kmValue','',@ischar);
+            parser.addParamValue('kmValueMaximum','',@ischar);
+            parser.addParamValue('substrate','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getKmValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromLigands()
-            % getEcNumbersFromLigands according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromLigands(self)
+            % getEcNumbersFromLigands according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromLigands():
+            %    ECNumbers = BrendaClient.getEcNumbersFromLigands()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromLigands'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromLigands()
-            % getOrganismsFromLigands according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromLigands(self)
+            % getOrganismsFromLigands according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromLigands():
+            %    Organisms = BrendaClient.getOrganismsFromLigands()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromLigands'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getLigands(parameter1, parameter2)
-            % getLigands according to the Brenda SOAP api.
+        function results = getLigands(self,varargin)
+            % getLigands according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getLigands(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getLigands(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - role: The role from the BRENDA database
+            %                   - ligand: The ligand from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - role: The roles stored in the BRENDA database
+            %                  - ligand: The ligands stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('role','',@ischar);
+            parser.addParamValue('ligand','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getLigands'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromLocalization()
-            % getEcNumbersFromLocalization according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromLocalization(self)
+            % getEcNumbersFromLocalization according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromLocalization():
+            %    ECNumbers = BrendaClient.getEcNumbersFromLocalization()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromLocalization'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromLocalization()
-            % getOrganismsFromLocalization according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromLocalization(self)
+            % getOrganismsFromLocalization according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromLocalization():
+            %    Organisms = BrendaClient.getOrganismsFromLocalization()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromLocalization'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getLocalization(parameter1, parameter2)
-            % getLocalization according to the Brenda SOAP api.
+        function results = getLocalization(self,varargin)
+            % getLocalization according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getLocalization(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getLocalization(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - localization: The localization from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - idGo: The idGo from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
+            %                   - textmining: The textmining from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - localization: The localizations stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - idGo: The idGos stored in the BRENDA database
+            %                  - textmining: The textminings stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('localization','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('idGo','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.addParamValue('textmining','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getLocalization'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromMetalsIons()
-            % getEcNumbersFromMetalsIons according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromMetalsIons(self)
+            % getEcNumbersFromMetalsIons according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromMetalsIons():
+            %    ECNumbers = BrendaClient.getEcNumbersFromMetalsIons()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromMetalsIons'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromMetalsIons()
-            % getOrganismsFromMetalsIons according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromMetalsIons(self)
+            % getOrganismsFromMetalsIons according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromMetalsIons():
+            %    Organisms = BrendaClient.getOrganismsFromMetalsIons()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromMetalsIons'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getMetalsIons(parameter1, parameter2)
-            % getMetalsIons according to the Brenda SOAP api.
+        function results = getMetalsIons(self,varargin)
+            % getMetalsIons according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getMetalsIons(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getMetalsIons(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - metalsIons: The metalsIons from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - metalsIons: The metalsIonss stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('metalsIons','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getMetalsIons'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromMolecularWeight()
-            % getEcNumbersFromMolecularWeight according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromMolecularWeight(self)
+            % getEcNumbersFromMolecularWeight according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromMolecularWeight():
+            %    ECNumbers = BrendaClient.getEcNumbersFromMolecularWeight()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromMolecularWeight'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromMolecularWeight()
-            % getOrganismsFromMolecularWeight according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromMolecularWeight(self)
+            % getOrganismsFromMolecularWeight according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromMolecularWeight():
+            %    Organisms = BrendaClient.getOrganismsFromMolecularWeight()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromMolecularWeight'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getMolecularWeight(parameter1, parameter2)
-            % getMolecularWeight according to the Brenda SOAP api.
+        function results = getMolecularWeight(self,varargin)
+            % getMolecularWeight according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getMolecularWeight(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getMolecularWeight(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - molecularWeight: The molecularWeight from the BRENDA database
+            %                   - molecularWeightMaximum: The molecularWeightMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - molecularWeight: The molecularWeights stored in the BRENDA database
+            %                  - molecularWeightMaximum: The molecularWeightMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('molecularWeight','',@ischar);
+            parser.addParamValue('molecularWeightMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getMolecularWeight'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromNaturalProduct()
-            % getEcNumbersFromNaturalProduct according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromNaturalProduct(self)
+            % getEcNumbersFromNaturalProduct according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromNaturalProduct():
+            %    ECNumbers = BrendaClient.getEcNumbersFromNaturalProduct()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromNaturalProduct'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromNaturalProduct()
-            % getOrganismsFromNaturalProduct according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromNaturalProduct(self)
+            % getOrganismsFromNaturalProduct according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromNaturalProduct():
+            %    Organisms = BrendaClient.getOrganismsFromNaturalProduct()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromNaturalProduct'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getNaturalProduct(parameter1, parameter2)
-            % getNaturalProduct according to the Brenda SOAP api.
+        function results = getNaturalProduct(self,varargin)
+            % getNaturalProduct according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getNaturalProduct(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getNaturalProduct(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - naturalProduct: The naturalProduct from the BRENDA database
+            %                   - naturalReactionPartners: The naturalReactionPartners from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - naturalProduct: The naturalProducts stored in the BRENDA database
+            %                  - naturalReactionPartners: The naturalReactionPartnerss stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('naturalProduct','',@ischar);
+            parser.addParamValue('naturalReactionPartners','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getNaturalProduct'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromNaturalSubstrate()
-            % getEcNumbersFromNaturalSubstrate according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromNaturalSubstrate(self)
+            % getEcNumbersFromNaturalSubstrate according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromNaturalSubstrate():
+            %    ECNumbers = BrendaClient.getEcNumbersFromNaturalSubstrate()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromNaturalSubstrate'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromNaturalSubstrate()
-            % getOrganismsFromNaturalSubstrate according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromNaturalSubstrate(self)
+            % getOrganismsFromNaturalSubstrate according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromNaturalSubstrate():
+            %    Organisms = BrendaClient.getOrganismsFromNaturalSubstrate()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromNaturalSubstrate'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getNaturalSubstrate(parameter1, parameter2)
-            % getNaturalSubstrate according to the Brenda SOAP api.
+        function results = getNaturalSubstrate(self,varargin)
+            % getNaturalSubstrate according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getNaturalSubstrate(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getNaturalSubstrate(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - naturalSubstrate: The naturalSubstrate from the BRENDA database
+            %                   - naturalReactionPartners: The naturalReactionPartners from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - naturalSubstrate: The naturalSubstrates stored in the BRENDA database
+            %                  - naturalReactionPartners: The naturalReactionPartnerss stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('naturalSubstrate','',@ischar);
+            parser.addParamValue('naturalReactionPartners','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getNaturalSubstrate'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromNaturalSubstratesProducts()
-            % getEcNumbersFromNaturalSubstratesProducts according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromNaturalSubstratesProducts(self)
+            % getEcNumbersFromNaturalSubstratesProducts according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromNaturalSubstratesProducts():
+            %    ECNumbers = BrendaClient.getEcNumbersFromNaturalSubstratesProducts()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromNaturalSubstratesProducts'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getNaturalSubstratesProducts(parameter1)
-            % getNaturalSubstratesProducts according to the Brenda SOAP api.
+        function results = getNaturalSubstratesProducts(self,varargin)
+            % getNaturalSubstratesProducts according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getNaturalSubstratesProducts(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getNaturalSubstratesProducts(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - naturalSubstrates: The naturalSubstrates from the BRENDA database
+            %                   - organismNaturalSubstrates: The organismNaturalSubstrates from the BRENDA database
+            %                   - commentaryNaturalSubstrates: The commentaryNaturalSubstrates from the BRENDA database
+            %                   - naturalProducts: The naturalProducts from the BRENDA database
+            %                   - commentaryNaturalProducts: The commentaryNaturalProducts from the BRENDA database
+            %                   - organismNaturalProducts: The organismNaturalProducts from the BRENDA database
+            %                   - reversibility: The reversibility from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - naturalSubstrates: The naturalSubstratess stored in the BRENDA database
+            %                  - organismNaturalSubstrates: The organismNaturalSubstratess stored in the BRENDA database
+            %                  - commentaryNaturalSubstrates: The commentaryNaturalSubstratess stored in the BRENDA database
+            %                  - naturalProducts: The naturalProductss stored in the BRENDA database
+            %                  - commentaryNaturalProducts: The commentaryNaturalProductss stored in the BRENDA database
+            %                  - organismNaturalProducts: The organismNaturalProductss stored in the BRENDA database
+            %                  - reversibility: The reversibilitys stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('naturalSubstrates','',@ischar);
+            parser.addParamValue('organismNaturalSubstrates','',@ischar);
+            parser.addParamValue('commentaryNaturalSubstrates','',@ischar);
+            parser.addParamValue('naturalProducts','',@ischar);
+            parser.addParamValue('commentaryNaturalProducts','',@ischar);
+            parser.addParamValue('organismNaturalProducts','',@ischar);
+            parser.addParamValue('reversibility','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getNaturalSubstratesProducts'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromOrganicSolventStability()
-            % getEcNumbersFromOrganicSolventStability according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromOrganicSolventStability(self)
+            % getEcNumbersFromOrganicSolventStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromOrganicSolventStability():
+            %    ECNumbers = BrendaClient.getEcNumbersFromOrganicSolventStability()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromOrganicSolventStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromOrganicSolventStability()
-            % getOrganismsFromOrganicSolventStability according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromOrganicSolventStability(self)
+            % getOrganismsFromOrganicSolventStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromOrganicSolventStability():
+            %    Organisms = BrendaClient.getOrganismsFromOrganicSolventStability()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromOrganicSolventStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getOrganicSolventStability(parameter1, parameter2)
-            % getOrganicSolventStability according to the Brenda SOAP api.
+        function results = getOrganicSolventStability(self,varargin)
+            % getOrganicSolventStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganicSolventStability(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getOrganicSolventStability(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - organicSolvent: The organicSolvent from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - organicSolvent: The organicSolvents stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('organicSolvent','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganicSolventStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromOrganism()
-            % getEcNumbersFromOrganism according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromOrganism(self)
+            % getEcNumbersFromOrganism according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromOrganism():
+            %    ECNumbers = BrendaClient.getEcNumbersFromOrganism()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromOrganism'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromOrganism()
-            % getOrganismsFromOrganism according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromOrganism(self)
+            % getOrganismsFromOrganism according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromOrganism():
+            %    Organisms = BrendaClient.getOrganismsFromOrganism()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromOrganism'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getOrganism(parameter1, parameter2)
-            % getOrganism according to the Brenda SOAP api.
+        function results = getOrganism(self,varargin)
+            % getOrganism according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganism(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getOrganism(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - sequenceCode: The sequenceCode from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
+            %                   - textmining: The textmining from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - sequenceCode: The sequenceCodes stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - textmining: The textminings stored in the BRENDA database
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('sequenceCode','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.addParamValue('textmining','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganism'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromOxidationStability()
-            % getEcNumbersFromOxidationStability according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromOxidationStability(self)
+            % getEcNumbersFromOxidationStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromOxidationStability():
+            %    ECNumbers = BrendaClient.getEcNumbersFromOxidationStability()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromOxidationStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromOxidationStability()
-            % getOrganismsFromOxidationStability according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromOxidationStability(self)
+            % getOrganismsFromOxidationStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromOxidationStability():
+            %    Organisms = BrendaClient.getOrganismsFromOxidationStability()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromOxidationStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getOxidationStability(parameter1, parameter2)
-            % getOxidationStability according to the Brenda SOAP api.
+        function results = getOxidationStability(self,varargin)
+            % getOxidationStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOxidationStability(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getOxidationStability(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - oxidationStability: The oxidationStability from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - oxidationStability: The oxidationStabilitys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('oxidationStability','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getOxidationStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromPathway()
-            % getEcNumbersFromPathway according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromPathway(self)
+            % getEcNumbersFromPathway according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromPathway():
+            %    ECNumbers = BrendaClient.getEcNumbersFromPathway()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromPathway'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getPathway(parameter1)
-            % getPathway according to the Brenda SOAP api.
+        function results = getPathway(self,varargin)
+            % getPathway according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getPathway(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getPathway(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - pathway: The pathway from the BRENDA database
+            %                   - link: The link from the BRENDA database
+            %                   - source_database: The source_database from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - pathway: The pathways stored in the BRENDA database
+            %                  - link: The links stored in the BRENDA database
+            %                  - source_database: The source_databases stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('pathway','',@ischar);
+            parser.addParamValue('link','',@ischar);
+            parser.addParamValue('source_database','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getPathway'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromPdb()
-            % getEcNumbersFromPdb according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromPdb(self)
+            % getEcNumbersFromPdb according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromPdb():
+            %    ECNumbers = BrendaClient.getEcNumbersFromPdb()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromPdb'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromPdb()
-            % getOrganismsFromPdb according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromPdb(self)
+            % getOrganismsFromPdb according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromPdb():
+            %    Organisms = BrendaClient.getOrganismsFromPdb()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromPdb'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getPdb(parameter1, parameter2)
-            % getPdb according to the Brenda SOAP api.
+        function results = getPdb(self,varargin)
+            % getPdb according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getPdb(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getPdb(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - pdb: The pdb from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - pdb: The pdbs stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('pdb','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getPdb'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromPhOptimum()
-            % getEcNumbersFromPhOptimum according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromPhOptimum(self)
+            % getEcNumbersFromPhOptimum according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromPhOptimum():
+            %    ECNumbers = BrendaClient.getEcNumbersFromPhOptimum()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromPhOptimum'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromPhOptimum()
-            % getOrganismsFromPhOptimum according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromPhOptimum(self)
+            % getOrganismsFromPhOptimum according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromPhOptimum():
+            %    Organisms = BrendaClient.getOrganismsFromPhOptimum()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromPhOptimum'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getPhOptimum(parameter1, parameter2)
-            % getPhOptimum according to the Brenda SOAP api.
+        function results = getPhOptimum(self,varargin)
+            % getPhOptimum according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getPhOptimum(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getPhOptimum(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - phOptimum: The phOptimum from the BRENDA database
+            %                   - phOptimumMaximum: The phOptimumMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - phOptimum: The phOptimums stored in the BRENDA database
+            %                  - phOptimumMaximum: The phOptimumMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('phOptimum','',@ischar);
+            parser.addParamValue('phOptimumMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getPhOptimum'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromPhRange()
-            % getEcNumbersFromPhRange according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromPhRange(self)
+            % getEcNumbersFromPhRange according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromPhRange():
+            %    ECNumbers = BrendaClient.getEcNumbersFromPhRange()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromPhRange'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromPhRange()
-            % getOrganismsFromPhRange according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromPhRange(self)
+            % getOrganismsFromPhRange according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromPhRange():
+            %    Organisms = BrendaClient.getOrganismsFromPhRange()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromPhRange'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getPhRange(parameter1, parameter2)
-            % getPhRange according to the Brenda SOAP api.
+        function results = getPhRange(self,varargin)
+            % getPhRange according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getPhRange(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getPhRange(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - phRange: The phRange from the BRENDA database
+            %                   - phRangeMaximum: The phRangeMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - phRange: The phRanges stored in the BRENDA database
+            %                  - phRangeMaximum: The phRangeMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('phRange','',@ischar);
+            parser.addParamValue('phRangeMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getPhRange'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromPhStability()
-            % getEcNumbersFromPhStability according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromPhStability(self)
+            % getEcNumbersFromPhStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromPhStability():
+            %    ECNumbers = BrendaClient.getEcNumbersFromPhStability()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromPhStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromPhStability()
-            % getOrganismsFromPhStability according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromPhStability(self)
+            % getOrganismsFromPhStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromPhStability():
+            %    Organisms = BrendaClient.getOrganismsFromPhStability()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromPhStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getPhStability(parameter1, parameter2)
-            % getPhStability according to the Brenda SOAP api.
+        function results = getPhStability(self,varargin)
+            % getPhStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getPhStability(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getPhStability(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - phStability: The phStability from the BRENDA database
+            %                   - phStabilityMaximum: The phStabilityMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - phStability: The phStabilitys stored in the BRENDA database
+            %                  - phStabilityMaximum: The phStabilityMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('phStability','',@ischar);
+            parser.addParamValue('phStabilityMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getPhStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromPiValue()
-            % getEcNumbersFromPiValue according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromPiValue(self)
+            % getEcNumbersFromPiValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromPiValue():
+            %    ECNumbers = BrendaClient.getEcNumbersFromPiValue()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromPiValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromPiValue()
-            % getOrganismsFromPiValue according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromPiValue(self)
+            % getOrganismsFromPiValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromPiValue():
+            %    Organisms = BrendaClient.getOrganismsFromPiValue()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromPiValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getPiValue(parameter1, parameter2)
-            % getPiValue according to the Brenda SOAP api.
+        function results = getPiValue(self,varargin)
+            % getPiValue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getPiValue(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getPiValue(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - piValue: The piValue from the BRENDA database
+            %                   - piValueMaximum: The piValueMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - piValue: The piValues stored in the BRENDA database
+            %                  - piValueMaximum: The piValueMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('piValue','',@ischar);
+            parser.addParamValue('piValueMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getPiValue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromPosttranslationalModification()
-            % getEcNumbersFromPosttranslationalModification according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromPosttranslationalModification(self)
+            % getEcNumbersFromPosttranslationalModification according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromPosttranslationalModification():
+            %    ECNumbers = BrendaClient.getEcNumbersFromPosttranslationalModification()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromPosttranslationalModification'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromPosttranslationalModification()
-            % getOrganismsFromPosttranslationalModification according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromPosttranslationalModification(self)
+            % getOrganismsFromPosttranslationalModification according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromPosttranslationalModification():
+            %    Organisms = BrendaClient.getOrganismsFromPosttranslationalModification()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromPosttranslationalModification'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getPosttranslationalModification(parameter1, parameter2)
-            % getPosttranslationalModification according to the Brenda SOAP api.
+        function results = getPosttranslationalModification(self,varargin)
+            % getPosttranslationalModification according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getPosttranslationalModification(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getPosttranslationalModification(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - posttranslationalModification: The posttranslationalModification from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - posttranslationalModification: The posttranslationalModifications stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('posttranslationalModification','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getPosttranslationalModification'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromProduct()
-            % getEcNumbersFromProduct according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromProduct(self)
+            % getEcNumbersFromProduct according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromProduct():
+            %    ECNumbers = BrendaClient.getEcNumbersFromProduct()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromProduct'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromProduct()
-            % getOrganismsFromProduct according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromProduct(self)
+            % getOrganismsFromProduct according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromProduct():
+            %    Organisms = BrendaClient.getOrganismsFromProduct()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromProduct'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getProduct(parameter1, parameter2)
-            % getProduct according to the Brenda SOAP api.
+        function results = getProduct(self,varargin)
+            % getProduct according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getProduct(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getProduct(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - product: The product from the BRENDA database
+            %                   - reactionPartners: The reactionPartners from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - product: The products stored in the BRENDA database
+            %                  - reactionPartners: The reactionPartnerss stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('product','',@ischar);
+            parser.addParamValue('reactionPartners','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getProduct'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromPurification()
-            % getEcNumbersFromPurification according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromPurification(self)
+            % getEcNumbersFromPurification according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromPurification():
+            %    ECNumbers = BrendaClient.getEcNumbersFromPurification()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromPurification'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromPurification()
-            % getOrganismsFromPurification according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromPurification(self)
+            % getOrganismsFromPurification according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromPurification():
+            %    Organisms = BrendaClient.getOrganismsFromPurification()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromPurification'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getPurification(parameter1, parameter2)
-            % getPurification according to the Brenda SOAP api.
+        function results = getPurification(self,varargin)
+            % getPurification according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getPurification(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getPurification(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getPurification'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromReaction()
-            % getEcNumbersFromReaction according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromReaction(self)
+            % getEcNumbersFromReaction according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromReaction():
+            %    ECNumbers = BrendaClient.getEcNumbersFromReaction()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromReaction'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromReaction()
-            % getOrganismsFromReaction according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromReaction(self)
+            % getOrganismsFromReaction according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromReaction():
+            %    Organisms = BrendaClient.getOrganismsFromReaction()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromReaction'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getReaction(parameter1, parameter2)
-            % getReaction according to the Brenda SOAP api.
+        function results = getReaction(self,varargin)
+            % getReaction according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getReaction(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getReaction(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - reaction: The reaction from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - reaction: The reactions stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('reaction','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getReaction'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromReactionType()
-            % getEcNumbersFromReactionType according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromReactionType(self)
+            % getEcNumbersFromReactionType according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromReactionType():
+            %    ECNumbers = BrendaClient.getEcNumbersFromReactionType()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromReactionType'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromReactionType()
-            % getOrganismsFromReactionType according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromReactionType(self)
+            % getOrganismsFromReactionType according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromReactionType():
+            %    Organisms = BrendaClient.getOrganismsFromReactionType()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromReactionType'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getReactionType(parameter1, parameter2)
-            % getReactionType according to the Brenda SOAP api.
+        function results = getReactionType(self,varargin)
+            % getReactionType according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getReactionType(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getReactionType(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - reactionType: The reactionType from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - reactionType: The reactionTypes stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('reactionType','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getReactionType'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromRecommendedName()
-            % getEcNumbersFromRecommendedName according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromRecommendedName(self)
+            % getEcNumbersFromRecommendedName according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromRecommendedName():
+            %    ECNumbers = BrendaClient.getEcNumbersFromRecommendedName()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromRecommendedName'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getRecommendedName(parameter1)
-            % getRecommendedName according to the Brenda SOAP api.
+        function results = getRecommendedName(self,varargin)
+            % getRecommendedName according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getRecommendedName(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getRecommendedName(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - recommendedName: The recommendedName from the BRENDA database
+            %                   - goNumber: The goNumber from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - recommendedName: The recommendedNames stored in the BRENDA database
+            %                  - goNumber: The goNumbers stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('recommendedName','',@ischar);
+            parser.addParamValue('goNumber','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getRecommendedName'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromReference()
-            % getEcNumbersFromReference according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromReference(self)
+            % getEcNumbersFromReference according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromReference():
+            %    ECNumbers = BrendaClient.getEcNumbersFromReference()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromReference'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromReference()
-            % getOrganismsFromReference according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromReference(self)
+            % getOrganismsFromReference according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromReference():
+            %    Organisms = BrendaClient.getOrganismsFromReference()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromReference'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getReference(parameter1, parameter2)
-            % getReference according to the Brenda SOAP api.
+        function results = getReference(self,varargin)
+            % getReference according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getReference(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getReference(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - reference: The reference from the BRENDA database
+            %                   - authors: The authors from the BRENDA database
+            %                   - title: The title from the BRENDA database
+            %                   - journal: The journal from the BRENDA database
+            %                   - volume: The volume from the BRENDA database
+            %                   - pages: The pages from the BRENDA database
+            %                   - year: The year from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - pubmedId: The pubmedId from the BRENDA database
+            %                   - textmining: The textmining from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - reference: The references stored in the BRENDA database
+            %                  - authors: The authorss stored in the BRENDA database
+            %                  - title: The titles stored in the BRENDA database
+            %                  - journal: The journals stored in the BRENDA database
+            %                  - volume: The volumes stored in the BRENDA database
+            %                  - pages: The pagess stored in the BRENDA database
+            %                  - year: The years stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - pubmedId: The pubmedIds stored in the BRENDA database
+            %                  - textmining: The textminings stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('reference','',@ischar);
+            parser.addParamValue('authors','',@ischar);
+            parser.addParamValue('title','',@ischar);
+            parser.addParamValue('journal','',@ischar);
+            parser.addParamValue('volume','',@ischar);
+            parser.addParamValue('pages','',@ischar);
+            parser.addParamValue('year','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('pubmedId','',@ischar);
+            parser.addParamValue('textmining','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getReference'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromRenatured()
-            % getEcNumbersFromRenatured according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromRenatured(self)
+            % getEcNumbersFromRenatured according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromRenatured():
+            %    ECNumbers = BrendaClient.getEcNumbersFromRenatured()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromRenatured'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromRenatured()
-            % getOrganismsFromRenatured according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromRenatured(self)
+            % getOrganismsFromRenatured according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromRenatured():
+            %    Organisms = BrendaClient.getOrganismsFromRenatured()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromRenatured'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getRenatured(parameter1, parameter2)
-            % getRenatured according to the Brenda SOAP api.
+        function results = getRenatured(self,varargin)
+            % getRenatured according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getRenatured(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getRenatured(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getRenatured'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromSequence()
-            % getEcNumbersFromSequence according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromSequence(self)
+            % getEcNumbersFromSequence according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromSequence():
+            %    ECNumbers = BrendaClient.getEcNumbersFromSequence()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromSequence'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromSequence()
-            % getOrganismsFromSequence according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromSequence(self)
+            % getOrganismsFromSequence according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromSequence():
+            %    Organisms = BrendaClient.getOrganismsFromSequence()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromSequence'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getSequence(parameter1, parameter2)
-            % getSequence according to the Brenda SOAP api.
+        function results = getSequence(self,varargin)
+            % getSequence according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getSequence(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getSequence(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - sequence: The sequence from the BRENDA database
+            %                   - noOfAminoAcids: The noOfAminoAcids from the BRENDA database
+            %                   - firstAccessionCode: The firstAccessionCode from the BRENDA database
+            %                   - source: The source from the BRENDA database
+            %                   - id: The id from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - sequence: The sequences stored in the BRENDA database
+            %                  - noOfAminoAcids: The noOfAminoAcidss stored in the BRENDA database
+            %                  - firstAccessionCode: The firstAccessionCodes stored in the BRENDA database
+            %                  - source: The sources stored in the BRENDA database
+            %                  - id: The ids stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('sequence','',@ischar);
+            parser.addParamValue('noOfAminoAcids','',@ischar);
+            parser.addParamValue('firstAccessionCode','',@ischar);
+            parser.addParamValue('source','',@ischar);
+            parser.addParamValue('id','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getSequence'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromSourceTissue()
-            % getEcNumbersFromSourceTissue according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromSourceTissue(self)
+            % getEcNumbersFromSourceTissue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromSourceTissue():
+            %    ECNumbers = BrendaClient.getEcNumbersFromSourceTissue()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromSourceTissue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromSourceTissue()
-            % getOrganismsFromSourceTissue according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromSourceTissue(self)
+            % getOrganismsFromSourceTissue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromSourceTissue():
+            %    Organisms = BrendaClient.getOrganismsFromSourceTissue()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromSourceTissue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getSourceTissue(parameter1, parameter2)
-            % getSourceTissue according to the Brenda SOAP api.
+        function results = getSourceTissue(self,varargin)
+            % getSourceTissue according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getSourceTissue(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getSourceTissue(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - sourceTissue: The sourceTissue from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
+            %                   - textmining: The textmining from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - sourceTissue: The sourceTissues stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - textmining: The textminings stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('sourceTissue','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.addParamValue('textmining','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getSourceTissue'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromSpecificActivity()
-            % getEcNumbersFromSpecificActivity according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromSpecificActivity(self)
+            % getEcNumbersFromSpecificActivity according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromSpecificActivity():
+            %    ECNumbers = BrendaClient.getEcNumbersFromSpecificActivity()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromSpecificActivity'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromSpecificActivity()
-            % getOrganismsFromSpecificActivity according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromSpecificActivity(self)
+            % getOrganismsFromSpecificActivity according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromSpecificActivity():
+            %    Organisms = BrendaClient.getOrganismsFromSpecificActivity()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromSpecificActivity'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getSpecificActivity(parameter1, parameter2)
-            % getSpecificActivity according to the Brenda SOAP api.
+        function results = getSpecificActivity(self,varargin)
+            % getSpecificActivity according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getSpecificActivity(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getSpecificActivity(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - specificActivity: The specificActivity from the BRENDA database
+            %                   - specificActivityMaximum: The specificActivityMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - specificActivity: The specificActivitys stored in the BRENDA database
+            %                  - specificActivityMaximum: The specificActivityMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('specificActivity','',@ischar);
+            parser.addParamValue('specificActivityMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getSpecificActivity'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromStorageStability()
-            % getEcNumbersFromStorageStability according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromStorageStability(self)
+            % getEcNumbersFromStorageStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromStorageStability():
+            %    ECNumbers = BrendaClient.getEcNumbersFromStorageStability()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromStorageStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromStorageStability()
-            % getOrganismsFromStorageStability according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromStorageStability(self)
+            % getOrganismsFromStorageStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromStorageStability():
+            %    Organisms = BrendaClient.getOrganismsFromStorageStability()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromStorageStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getStorageStability(parameter1, parameter2)
-            % getStorageStability according to the Brenda SOAP api.
+        function results = getStorageStability(self,varargin)
+            % getStorageStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getStorageStability(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getStorageStability(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - storageStability: The storageStability from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - storageStability: The storageStabilitys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('storageStability','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getStorageStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromSubstrate()
-            % getEcNumbersFromSubstrate according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromSubstrate(self)
+            % getEcNumbersFromSubstrate according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromSubstrate():
+            %    ECNumbers = BrendaClient.getEcNumbersFromSubstrate()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromSubstrate'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromSubstrate()
-            % getOrganismsFromSubstrate according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromSubstrate(self)
+            % getOrganismsFromSubstrate according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromSubstrate():
+            %    Organisms = BrendaClient.getOrganismsFromSubstrate()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromSubstrate'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getSubstrate(parameter1, parameter2)
-            % getSubstrate according to the Brenda SOAP api.
+        function results = getSubstrate(self,varargin)
+            % getSubstrate according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getSubstrate(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getSubstrate(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - substrate: The substrate from the BRENDA database
+            %                   - reactionPartners: The reactionPartners from the BRENDA database
+            %                   - ligandStructureId: The ligandStructureId from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - substrate: The substrates stored in the BRENDA database
+            %                  - reactionPartners: The reactionPartnerss stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('substrate','',@ischar);
+            parser.addParamValue('reactionPartners','',@ischar);
+            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getSubstrate'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromSubstratesProducts()
-            % getEcNumbersFromSubstratesProducts according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromSubstratesProducts(self)
+            % getEcNumbersFromSubstratesProducts according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromSubstratesProducts():
+            %    ECNumbers = BrendaClient.getEcNumbersFromSubstratesProducts()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromSubstratesProducts'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getSubstratesProducts(parameter1)
-            % getSubstratesProducts according to the Brenda SOAP api.
+        function results = getSubstratesProducts(self,varargin)
+            % getSubstratesProducts according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getSubstratesProducts(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getSubstratesProducts(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - substrates: The substrates from the BRENDA database
+            %                   - commentarySubstrates: The commentarySubstrates from the BRENDA database
+            %                   - literatureSubstrates: The literatureSubstrates from the BRENDA database
+            %                   - organismSubstrates: The organismSubstrates from the BRENDA database
+            %                   - products: The products from the BRENDA database
+            %                   - commentaryProducts: The commentaryProducts from the BRENDA database
+            %                   - literatureProducts: The literatureProducts from the BRENDA database
+            %                   - organismProducts: The organismProducts from the BRENDA database
+            %                   - reversibility: The reversibility from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - substrates: The substratess stored in the BRENDA database
+            %                  - commentarySubstrates: The commentarySubstratess stored in the BRENDA database
+            %                  - literatureSubstrates: The literatureSubstratess stored in the BRENDA database
+            %                  - organismSubstrates: The organismSubstratess stored in the BRENDA database
+            %                  - products: The productss stored in the BRENDA database
+            %                  - commentaryProducts: The commentaryProductss stored in the BRENDA database
+            %                  - literatureProducts: The literatureProductss stored in the BRENDA database
+            %                  - organismProducts: The organismProductss stored in the BRENDA database
+            %                  - reversibility: The reversibilitys stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('substrates','',@ischar);
+            parser.addParamValue('commentarySubstrates','',@ischar);
+            parser.addParamValue('literatureSubstrates','',@ischar);
+            parser.addParamValue('organismSubstrates','',@ischar);
+            parser.addParamValue('products','',@ischar);
+            parser.addParamValue('commentaryProducts','',@ischar);
+            parser.addParamValue('literatureProducts','',@ischar);
+            parser.addParamValue('organismProducts','',@ischar);
+            parser.addParamValue('reversibility','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getSubstratesProducts'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromSubunits()
-            % getEcNumbersFromSubunits according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromSubunits(self)
+            % getEcNumbersFromSubunits according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromSubunits():
+            %    ECNumbers = BrendaClient.getEcNumbersFromSubunits()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromSubunits'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromSubunits()
-            % getOrganismsFromSubunits according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromSubunits(self)
+            % getOrganismsFromSubunits according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromSubunits():
+            %    Organisms = BrendaClient.getOrganismsFromSubunits()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromSubunits'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getSubunits(parameter1, parameter2)
-            % getSubunits according to the Brenda SOAP api.
+        function results = getSubunits(self,varargin)
+            % getSubunits according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getSubunits(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getSubunits(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - subunits: The subunits from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - subunits: The subunitss stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('subunits','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getSubunits'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromSynonyms()
-            % getEcNumbersFromSynonyms according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromSynonyms(self)
+            % getEcNumbersFromSynonyms according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromSynonyms():
+            %    ECNumbers = BrendaClient.getEcNumbersFromSynonyms()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromSynonyms'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromSynonyms()
-            % getOrganismsFromSynonyms according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromSynonyms(self)
+            % getOrganismsFromSynonyms according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromSynonyms():
+            %    Organisms = BrendaClient.getOrganismsFromSynonyms()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromSynonyms'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getSynonyms(parameter1, parameter2)
-            % getSynonyms according to the Brenda SOAP api.
+        function results = getSynonyms(self,varargin)
+            % getSynonyms according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getSynonyms(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getSynonyms(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - synonyms: The synonyms from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - synonyms: The synonymss stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('synonyms','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getSynonyms'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromSystematicName()
-            % getEcNumbersFromSystematicName according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromSystematicName(self)
+            % getEcNumbersFromSystematicName according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromSystematicName():
+            %    ECNumbers = BrendaClient.getEcNumbersFromSystematicName()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromSystematicName'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getSystematicName(parameter1)
-            % getSystematicName according to the Brenda SOAP api.
+        function results = getSystematicName(self,varargin)
+            % getSystematicName according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getSystematicName(parameter1):
-            % INPUTS:
-            %    parameter1:    ParameDescription
+            %    results = BrendaClient.getSystematicName(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - systematicName: The systematicName from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - systematicName: The systematicNames stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('systematicName','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getSystematicName'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromTemperatureOptimum()
-            % getEcNumbersFromTemperatureOptimum according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromTemperatureOptimum(self)
+            % getEcNumbersFromTemperatureOptimum according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromTemperatureOptimum():
+            %    ECNumbers = BrendaClient.getEcNumbersFromTemperatureOptimum()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromTemperatureOptimum'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromTemperatureOptimum()
-            % getOrganismsFromTemperatureOptimum according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromTemperatureOptimum(self)
+            % getOrganismsFromTemperatureOptimum according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromTemperatureOptimum():
+            %    Organisms = BrendaClient.getOrganismsFromTemperatureOptimum()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromTemperatureOptimum'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getTemperatureOptimum(parameter1, parameter2)
-            % getTemperatureOptimum according to the Brenda SOAP api.
+        function results = getTemperatureOptimum(self,varargin)
+            % getTemperatureOptimum according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getTemperatureOptimum(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getTemperatureOptimum(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - temperatureOptimum: The temperatureOptimum from the BRENDA database
+            %                   - temperatureOptimumMaximum: The temperatureOptimumMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - temperatureOptimum: The temperatureOptimums stored in the BRENDA database
+            %                  - temperatureOptimumMaximum: The temperatureOptimumMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('temperatureOptimum','',@ischar);
+            parser.addParamValue('temperatureOptimumMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getTemperatureOptimum'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromTemperatureRange()
-            % getEcNumbersFromTemperatureRange according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromTemperatureRange(self)
+            % getEcNumbersFromTemperatureRange according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromTemperatureRange():
+            %    ECNumbers = BrendaClient.getEcNumbersFromTemperatureRange()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromTemperatureRange'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromTemperatureRange()
-            % getOrganismsFromTemperatureRange according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromTemperatureRange(self)
+            % getOrganismsFromTemperatureRange according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromTemperatureRange():
+            %    Organisms = BrendaClient.getOrganismsFromTemperatureRange()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromTemperatureRange'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getTemperatureRange(parameter1, parameter2)
-            % getTemperatureRange according to the Brenda SOAP api.
+        function results = getTemperatureRange(self,varargin)
+            % getTemperatureRange according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getTemperatureRange(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getTemperatureRange(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - temperatureRange: The temperatureRange from the BRENDA database
+            %                   - temperatureRangeMaximum: The temperatureRangeMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - temperatureRange: The temperatureRanges stored in the BRENDA database
+            %                  - temperatureRangeMaximum: The temperatureRangeMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('temperatureRange','',@ischar);
+            parser.addParamValue('temperatureRangeMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getTemperatureRange'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromTemperatureStability()
-            % getEcNumbersFromTemperatureStability according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromTemperatureStability(self)
+            % getEcNumbersFromTemperatureStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromTemperatureStability():
+            %    ECNumbers = BrendaClient.getEcNumbersFromTemperatureStability()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromTemperatureStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromTemperatureStability()
-            % getOrganismsFromTemperatureStability according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromTemperatureStability(self)
+            % getOrganismsFromTemperatureStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromTemperatureStability():
+            %    Organisms = BrendaClient.getOrganismsFromTemperatureStability()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromTemperatureStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
         
         
-        function output = getTemperatureStability(parameter1, parameter2)
-            % getTemperatureStability according to the Brenda SOAP api.
+        function results = getTemperatureStability(self,varargin)
+            % getTemperatureStability according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getTemperatureStability(parameter1, parameter2):
-            % INPUTS:
-            %    parameter1:    ParameDescription
-            %    parameter2:    ParameDescription
+            %    results = BrendaClient.getTemperatureStability(varargin)
+            % OPTIONAL INPUTS:
+            %    varargin:     A struct with any of the following fields, or parameter/value pairs with the following names.
+            %                  At least one of the parameters/fields marked with * must be present.
+            %                  Otherwise the return value is empty.
+            %                   - ecNumber: The ecNumber from the BRENDA database*
+            %                   - organism: The organism from the BRENDA database*
+            %                   - temperatureStability: The temperatureStability from the BRENDA database
+            %                   - temperatureStabilityMaximum: The temperatureStabilityMaximum from the BRENDA database
+            %                   - commentary: The commentary from the BRENDA database
+            %                   - literature: The literature from the BRENDA database
             % OUTPUT:
-            %    output:    Description
+            %    results:    A struct with the following fields:
+            %                  - ecNumber: The ecNumbers stored in the BRENDA database
+            %                  - temperatureStability: The temperatureStabilitys stored in the BRENDA database
+            %                  - temperatureStabilityMaximum: The temperatureStabilityMaximums stored in the BRENDA database
+            %                  - commentary: The commentarys stored in the BRENDA database
+            %                  - organism: The organisms stored in the BRENDA database
+            parser=inputParser();
+            parser.addParamValue('ecNumber','',@ischar);
+            parser.addParamValue('organism','',@ischar);
+            parser.addParamValue('temperatureStability','',@ischar);
+            parser.addParamValue('temperatureStabilityMaximum','',@ischar);
+            parser.addParamValue('commentary','',@ischar);
+            parser.addParamValue('literature','',@ischar);
+            parser.parse(varargin{:})
+            parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' parameter1 '#' parameter2];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            if isempty(parameters)
+                parameters = strjoin({self.userName , lower(self.password) }, ',');
+            else
+                parameters = strjoin({self.userName , lower(self.password) , parameters}, ',');
+            end
             call.setOperationName(QName('http://soapinterop.org/', 'getTemperatureStability'));
             resultString = call.invoke( {parameters} );
-            output = self.parseStruct(resultString);
+            results = self.parseStruct(resultString);
         end
         
         
-        function output = getEcNumbersFromTurnoverNumber()
-            % getEcNumbersFromTurnoverNumber according to the Brenda SOAP api.
+        function ECNumbers = getEcNumbersFromTurnoverNumber(self)
+            % getEcNumbersFromTurnoverNumber according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getEcNumbersFromTurnoverNumber():
+            %    ECNumbers = BrendaClient.getEcNumbersFromTurnoverNumber()
             % OUTPUT:
-            %    output:    Description
+            %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getEcNumbersFromTurnoverNumber'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            ECNumbers = self.parseArray(resultString);
         end
         
         
-        function output = getOrganismsFromTurnoverNumber()
-            % getOrganismsFromTurnoverNumber according to the Brenda SOAP api.
+        function Organisms = getOrganismsFromTurnoverNumber(self)
+            % getOrganismsFromTurnoverNumber according to the BRENDA SOAP api.
             % USAGE:
-            %    output = BrendaClient.getOrganismsFromTurnoverNumber():
+            %    Organisms = BrendaClient.getOrganismsFromTurnoverNumber()
             % OUTPUT:
-            %    output:    Description
+            %    Organisms:    A cell array of Organism from the BRENDA database
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
-            parameters = [self.userName ',' lower(self.password) ',' ];
+            call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
+            parameters = strjoin({self.userName , lower(self.password) }, ',');
             call.setOperationName(QName('http://soapinterop.org/', 'getOrganismsFromTurnoverNumber'));
             resultString = call.invoke( {parameters} );
-            output = self.parseArray(resultString);
+            Organisms = self.parseArray(resultString);
         end
-        
         
         
     end
