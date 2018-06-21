@@ -43,7 +43,6 @@ structout = false;
 modelfiles = {};
 
 modelOptions = getBioModelsQuery('*:* AND modellingapproach:"Constraint-based model"');
-%modelOptions = webread('https://wwwdev.ebi.ac.uk/biomodels/search?query=*:* AND modellingapproach:"Constraint-based model"');
 modelOptions = modelOptions.models;
 modelIDs = {modelOptions.id};
 modelNames = {modelOptions.name};
