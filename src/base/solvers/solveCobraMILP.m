@@ -217,7 +217,7 @@ switch solver
         else
             solStat = 3;  % Other problem, but integer solution exists
         end
-
+    
     case 'gurobi_mex'
         % Free academic licenses for the Gurobi solver can be obtained from
         % http://www.gurobi.com/html/academic.html
@@ -495,7 +495,7 @@ switch solver
         tomlabProblem.MIP.cpxControl.EPAGAP = cobraParams.absMipGapTol;
 
         %Now, replace anything that is in the solver Specific field.
-        tomlabProblem = updateStruct(tomlabProblem.MIP.cpxControl,solverParams);
+        tomlabProblem = updateStructData(tomlabProblem.MIP.cpxControl,solverParams);
 
         % Set initial solution
         tomlabProblem.MIP.xIP = x0;
@@ -543,12 +543,78 @@ switch solver
         solverParams = updateStructData(cobraParams,solverParams);
         writeLPProblem(MILPproblem, 'problemName','COBRAMILPProblem','fileName','MILP.mps','solverParams',solverParams);
         return
+    case 'matlab'
+        % convert problem.
+        equalities = MILPproblem.csense == 'E';
+        toFlip = MILPproblem.csense == 'G';
+        Aeq = MILPproblem.A(equalities,:);
+        beq = MILPproblem.b(equalities);
+        MILPproblem.A(toFlip,:) = MILPproblem.A(toFlip,:)*-1;
+        MILPproblem.b(toFlip) = -MILPproblem.b(toFlip);
+        A = MILPproblem.A(~equalities,:);
+        b = MILPproblem.b(~equalities);
+        f = MILPproblem.osense * MILPproblem.c;
+        binary = MILPproblem.vartype == 'B';
+        intcon = find(MILPproblem.vartype == 'I' | binary);
+        lb = MILPproblem.lb;
+        lb(binary) = 0;
+        ub = MILPproblem.ub;
+        ub(binary) = 1;
+        
+        %Set up options
+        options = optimoptions('intlinprog');
+        options.MaxTime = cobraParams.timeLimit;
+
+        if verLessThan('MATLAB','9.0')
+            options.TolCon = min(max(cobraParams.feasTol,1e-9),1e-3);
+            options.TolInteger = min(max(cobraParams.intTol,1e-6),1e-3);
+            options.TolGapAbs = cobraParams.absMipGapTol;
+            options.TolGapRel = cobraParams.relMipGapTol;
+            options.TolFunLP= cobraParams.optTol;
+
+        else
+            options.ConstraintTolerance = min(max(cobraParams.feasTol,1e-9),1e-3);
+            options.IntegerTolerance = min(max(cobraParams.intTol,1e-6),1e-3);
+            options.AbsoluteGapTolerance = cobraParams.absMipGapTol;
+            options.RelativeGapTolerance = cobraParams.relMipGapTol;
+            options.LPOptimalityTolerance = cobraParams.optTol;
+        end
+        % set the printLevel.
+        if cobraParams.printLevel == 0
+            options.Display = 'off';
+        elseif cobraParams.printLevel == 1
+            options.Display = 'final';
+        elseif cobraParams.printLevel >= 2
+            options.Display = 'iter';
+        end
+        % push actual solver parameters
+        options = updateStructData(options,solverParams);
+        
+        [x,f,stat,~] = intlinprog(f,intcon,A,b,Aeq,beq,lb,ub,options);
+        f = MILPproblem.osense * f;
+        switch stat
+            case 1
+                solStat = 1;
+            case 2 
+                solStat = 3;
+            case 0
+                solStat = -1;
+            case -2
+                solStat = 0;
+            case -3
+                solStat = 2;
+            case -1
+                solStat = 3;
+            otherwise
+                solStat = 3;
+        end  
+                
     otherwise
         if isempty(solver)
             error('There is no solver for MILP problems available');
         else
             error(['Unknown solver: ' solver]);
-        end
+        end        
 end
 t = etime(clock, t_start);
 
