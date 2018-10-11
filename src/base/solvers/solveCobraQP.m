@@ -564,7 +564,63 @@ switch solver
         else
             stat = -1; % Solution not optimal or solver problem
         end
-        %%
+        %% Matlab 
+    case 'matlab'
+        % convert problem.        
+        equalities = QPproblem.csense == 'E';
+        toFlip = QPproblem.csense == 'G';
+        Aeq = QPproblem.A(equalities,:);
+        beq = QPproblem.b(equalities);
+        QPproblem.A(toFlip,:) = QPproblem.A(toFlip,:)*-1;
+        QPproblem.b(toFlip) = -QPproblem.b(toFlip);
+        A = QPproblem.A(~equalities,:);
+        b = QPproblem.b(~equalities);
+        f = QPproblem.osense * QPproblem.c;
+        H = QPproblem.F;                
+        lb = QPproblem.lb;        
+        ub = QPproblem.ub;        
+        
+        %Set up options
+        options = optimoptions('quadprog');
+        
+        if verLessThan('MATLAB','9.0')
+            options.TolCon = min(max(cobraParams.feasTol,1e-9),1e-3);            
+            options.TolFun= cobraParams.optTol;
+        else
+            options.ConstraintTolerance = min(max(cobraParams.feasTol,1e-9),1e-3);
+            options.OptimalityTolerance = cobraParams.optTol;
+        end
+        % set the printLevel.
+        if cobraParams.printLevel == 0
+            options.Display = 'off';
+        elseif cobraParams.printLevel == 1
+            options.Display = 'final';
+        elseif cobraParams.printLevel >= 2
+            options.Display = 'iter';
+            options.Diagnostics = 'on';
+        end
+        % push actual solver parameters
+        options = updateStructData(options,solverParams);
+        
+        [x,f,origStat,~] = quadprog(H,f,A,b,Aeq,beq,lb,ub,zeros(size(f)),options);
+        f = 0.5*x'*H*x + QPproblem.osense * QPproblem.c' * x;
+        switch origStat
+            case 1
+                stat = 1;
+            case -2 
+                stat = 0;
+                x = [];
+                f = [];
+            case -3
+                stat = 2;            
+                x = [];
+                f = [];
+            otherwise
+                stat = -1;
+                x = [];
+                f = [];
+        end  
+        
     otherwise
         if isempty(solver)
             error('There is no solver for QP problems available');

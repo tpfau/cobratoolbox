@@ -22,7 +22,7 @@ cd(fileDir);
 tol = 1e-4;
 
 % test solver packages
-useIfAvailable = {'tomlab_cplex','ibm_cplex', 'gurobi','qpng','ibm_cplex','mosek'};
+useIfAvailable = {'tomlab_cplex','ibm_cplex', 'gurobi','qpng','ibm_cplex','mosek','matlab'};
 % pdco is a normalizing solver not a general purpose QP solver, so it will
 % fail the test
 solverPkgs = prepareTest('needsQP',true,'useSolversIfAvailable', useIfAvailable,'excludeSolvers',{'pdco'});
