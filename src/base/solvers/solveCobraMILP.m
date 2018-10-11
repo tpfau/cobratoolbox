@@ -597,16 +597,24 @@ switch solver
                 solStat = 1;
             case 2 
                 solStat = 3;
+                x = [];
+                f = [];
             case 0
                 solStat = -1;
+                x = [];
+                f = [];
             case -2
                 solStat = 0;
+                x = [];
+                f = [];                
             case -3
                 solStat = 2;
-            case -1
-                solStat = 3;
+                x = [];
+                f = [];                             
             otherwise
                 solStat = 3;
+                x = [];
+                f = [];
         end  
                 
     otherwise
