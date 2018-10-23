@@ -9,7 +9,8 @@ global CBTDIR
 import org.apache.axis.client.*;
 
 if ~exist('org.apache.axis.client.Service','class')
-    axisFolder = [CBTDIR filesep 'external' filesep 'axis-1_4' filesep 'lib'];
+    
+    axisFolder = fileparts(which('axis.jar'));
     files = dir(axisFolder);
     for i = 1:size(files,1)
         name = files(i).name;
