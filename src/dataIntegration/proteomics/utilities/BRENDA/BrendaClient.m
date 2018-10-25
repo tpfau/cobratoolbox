@@ -111,7 +111,7 @@ classdef BrendaClient < handle
             % OUTPUT:
             %    results:    A cell array of  from the BRENDA database
             parser=inputParser();
-            parser.addParamValue('compoundName','',@ischar);
+            parser.addParameter('compoundName','',@ischar);
             parser.parse(varargin{:})
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
@@ -140,7 +140,7 @@ classdef BrendaClient < handle
             %                  - year: The years stored in the BRENDA database
             %                  - pubmedId: The pubmedIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('id','',@ischar);
+            parser.addParameter('id','',@ischar);
             parser.parse(varargin{:})
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
@@ -169,7 +169,7 @@ classdef BrendaClient < handle
             %                  - year: The years stored in the BRENDA database
             %                  - pubmedId: The pubmedIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('pubmedid','',@ischar);
+            parser.addParameter('pubmedid','',@ischar);
             parser.parse(varargin{:})
             import javax.xml.namespace.*;
             call = self.brendaService.createCall();
@@ -193,7 +193,7 @@ classdef BrendaClient < handle
             %    ECNumbers:    A cell array of EC Number from the BRENDA database
             import javax.xml.namespace.*;
             parser=inputParser();
-            parser.addParamValue('activatingCompound','',@ischar);
+            parser.addParameter('activatingCompound','',@ischar);
             parser.parse(varargin{:})
             call = self.brendaService.createCall();
             call.setTargetEndpointAddress(java.net.URL(self.brendaURL));
@@ -244,12 +244,12 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('activatingCompound','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('activatingCompound','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -318,11 +318,11 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('application','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('application','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -373,10 +373,10 @@ classdef BrendaClient < handle
             %                  - casRegistryNumber: The casRegistryNumbers stored in the BRENDA database
             %                  - commentary: The commentarys stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('casRegistryNumber','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('casRegistryNumber','',@ischar);
+            parser.addParameter('commentary','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -443,10 +443,10 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -517,12 +517,12 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('cofactor','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('cofactor','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -589,10 +589,10 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -649,13 +649,13 @@ classdef BrendaClient < handle
             %                  - category: The categorys stored in the BRENDA database
             %                  - highestConfidenceLevel: The highestConfidenceLevels stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('disease','',@ischar);
-            parser.addParamValue('pubmedId','',@ischar);
-            parser.addParamValue('titlePub','',@ischar);
-            parser.addParamValue('category','',@ischar);
-            parser.addParamValue('highestConfidenceLevel','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('disease','',@ischar);
+            parser.addParameter('pubmedId','',@ischar);
+            parser.addParameter('titlePub','',@ischar);
+            parser.addParameter('category','',@ischar);
+            parser.addParameter('highestConfidenceLevel','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -704,9 +704,9 @@ classdef BrendaClient < handle
             %                  - ecNumber: The ecNumbers stored in the BRENDA database
             %                  - commentary: The commentarys stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('commentary','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -775,11 +775,11 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('engineering','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('engineering','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -828,9 +828,9 @@ classdef BrendaClient < handle
             %                  - ecNumber: The ecNumbers stored in the BRENDA database
             %                  - synonyms: The synonymss stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('synonyms','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('synonyms','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -897,10 +897,10 @@ classdef BrendaClient < handle
             %                  - generalStability: The generalStabilitys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('generalStability','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('generalStability','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -975,14 +975,14 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('ic50Value','',@ischar);
-            parser.addParamValue('ic50ValueMaximum','',@ischar);
-            parser.addParamValue('inhibitor','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('ic50Value','',@ischar);
+            parser.addParameter('ic50ValueMaximum','',@ischar);
+            parser.addParameter('inhibitor','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1053,12 +1053,12 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('inhibitors','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('inhibitors','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1133,14 +1133,14 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('kcatKmValue','',@ischar);
-            parser.addParamValue('kcatKmValueMaximum','',@ischar);
-            parser.addParamValue('substrate','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('kcatKmValue','',@ischar);
+            parser.addParameter('kcatKmValueMaximum','',@ischar);
+            parser.addParameter('substrate','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1215,14 +1215,14 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('kiValue','',@ischar);
-            parser.addParamValue('kiValueMaximum','',@ischar);
-            parser.addParamValue('inhibitor','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('kiValue','',@ischar);
+            parser.addParameter('kiValueMaximum','',@ischar);
+            parser.addParameter('inhibitor','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1297,14 +1297,14 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('kmValue','',@ischar);
-            parser.addParamValue('kmValueMaximum','',@ischar);
-            parser.addParamValue('substrate','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('kmValue','',@ischar);
+            parser.addParameter('kmValueMaximum','',@ischar);
+            parser.addParameter('substrate','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1374,11 +1374,11 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('role','',@ischar);
-            parser.addParamValue('ligand','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('role','',@ischar);
+            parser.addParameter('ligand','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1451,13 +1451,13 @@ classdef BrendaClient < handle
             %                  - idGo: The idGos stored in the BRENDA database
             %                  - textmining: The textminings stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('localization','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('idGo','',@ischar);
-            parser.addParamValue('literature','',@ischar);
-            parser.addParamValue('textmining','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('localization','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('idGo','',@ischar);
+            parser.addParameter('literature','',@ischar);
+            parser.addParameter('textmining','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1528,12 +1528,12 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('metalsIons','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('metalsIons','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1604,12 +1604,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('molecularWeight','',@ischar);
-            parser.addParamValue('molecularWeightMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('molecularWeight','',@ischar);
+            parser.addParameter('molecularWeightMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1679,11 +1679,11 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('naturalProduct','',@ischar);
-            parser.addParamValue('naturalReactionPartners','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('naturalProduct','',@ischar);
+            parser.addParameter('naturalReactionPartners','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1753,11 +1753,11 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('naturalSubstrate','',@ischar);
-            parser.addParamValue('naturalReactionPartners','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('naturalSubstrate','',@ischar);
+            parser.addParameter('naturalReactionPartners','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1818,15 +1818,15 @@ classdef BrendaClient < handle
             %                  - organismNaturalProducts: The organismNaturalProductss stored in the BRENDA database
             %                  - reversibility: The reversibilitys stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('naturalSubstrates','',@ischar);
-            parser.addParamValue('organismNaturalSubstrates','',@ischar);
-            parser.addParamValue('commentaryNaturalSubstrates','',@ischar);
-            parser.addParamValue('naturalProducts','',@ischar);
-            parser.addParamValue('commentaryNaturalProducts','',@ischar);
-            parser.addParamValue('organismNaturalProducts','',@ischar);
-            parser.addParamValue('reversibility','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('naturalSubstrates','',@ischar);
+            parser.addParameter('organismNaturalSubstrates','',@ischar);
+            parser.addParameter('commentaryNaturalSubstrates','',@ischar);
+            parser.addParameter('naturalProducts','',@ischar);
+            parser.addParameter('commentaryNaturalProducts','',@ischar);
+            parser.addParameter('organismNaturalProducts','',@ischar);
+            parser.addParameter('reversibility','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1895,11 +1895,11 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('organicSolvent','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('organicSolvent','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -1970,12 +1970,12 @@ classdef BrendaClient < handle
             %                  - textmining: The textminings stored in the BRENDA database
             %                  - ecNumber: The ecNumbers stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('sequenceCode','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
-            parser.addParamValue('textmining','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('sequenceCode','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
+            parser.addParameter('textmining','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2042,10 +2042,10 @@ classdef BrendaClient < handle
             %                  - oxidationStability: The oxidationStabilitys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('oxidationStability','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('oxidationStability','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2098,11 +2098,11 @@ classdef BrendaClient < handle
             %                  - link: The links stored in the BRENDA database
             %                  - source_database: The source_databases stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('pathway','',@ischar);
-            parser.addParamValue('link','',@ischar);
-            parser.addParamValue('source_database','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('pathway','',@ischar);
+            parser.addParameter('link','',@ischar);
+            parser.addParameter('source_database','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2168,9 +2168,9 @@ classdef BrendaClient < handle
             %                  - pdb: The pdbs stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('pdb','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('pdb','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2241,12 +2241,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('phOptimum','',@ischar);
-            parser.addParamValue('phOptimumMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('phOptimum','',@ischar);
+            parser.addParameter('phOptimumMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2317,12 +2317,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('phRange','',@ischar);
-            parser.addParamValue('phRangeMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('phRange','',@ischar);
+            parser.addParameter('phRangeMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2393,12 +2393,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('phStability','',@ischar);
-            parser.addParamValue('phStabilityMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('phStability','',@ischar);
+            parser.addParameter('phStabilityMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2469,12 +2469,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('piValue','',@ischar);
-            parser.addParamValue('piValueMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('piValue','',@ischar);
+            parser.addParameter('piValueMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2543,11 +2543,11 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('posttranslationalModification','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('posttranslationalModification','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2617,11 +2617,11 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('product','',@ischar);
-            parser.addParamValue('reactionPartners','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('product','',@ischar);
+            parser.addParameter('reactionPartners','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2688,10 +2688,10 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2760,11 +2760,11 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('reaction','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('reaction','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2833,11 +2833,11 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('reactionType','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('reactionType','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2888,10 +2888,10 @@ classdef BrendaClient < handle
             %                  - recommendedName: The recommendedNames stored in the BRENDA database
             %                  - goNumber: The goNumbers stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('recommendedName','',@ischar);
-            parser.addParamValue('goNumber','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('recommendedName','',@ischar);
+            parser.addParameter('goNumber','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -2975,18 +2975,18 @@ classdef BrendaClient < handle
             %                  - pubmedId: The pubmedIds stored in the BRENDA database
             %                  - textmining: The textminings stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('reference','',@ischar);
-            parser.addParamValue('authors','',@ischar);
-            parser.addParamValue('title','',@ischar);
-            parser.addParamValue('journal','',@ischar);
-            parser.addParamValue('volume','',@ischar);
-            parser.addParamValue('pages','',@ischar);
-            parser.addParamValue('year','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('pubmedId','',@ischar);
-            parser.addParamValue('textmining','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('reference','',@ischar);
+            parser.addParameter('authors','',@ischar);
+            parser.addParameter('title','',@ischar);
+            parser.addParameter('journal','',@ischar);
+            parser.addParameter('volume','',@ischar);
+            parser.addParameter('pages','',@ischar);
+            parser.addParameter('year','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('pubmedId','',@ischar);
+            parser.addParameter('textmining','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3053,10 +3053,10 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3130,13 +3130,13 @@ classdef BrendaClient < handle
             %                  - id: The ids stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('sequence','',@ischar);
-            parser.addParamValue('noOfAminoAcids','',@ischar);
-            parser.addParamValue('firstAccessionCode','',@ischar);
-            parser.addParamValue('source','',@ischar);
-            parser.addParamValue('id','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('sequence','',@ischar);
+            parser.addParameter('noOfAminoAcids','',@ischar);
+            parser.addParameter('firstAccessionCode','',@ischar);
+            parser.addParameter('source','',@ischar);
+            parser.addParameter('id','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3207,12 +3207,12 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - textmining: The textminings stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('sourceTissue','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
-            parser.addParamValue('textmining','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('sourceTissue','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
+            parser.addParameter('textmining','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3283,12 +3283,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('specificActivity','',@ischar);
-            parser.addParamValue('specificActivityMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('specificActivity','',@ischar);
+            parser.addParameter('specificActivityMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3355,10 +3355,10 @@ classdef BrendaClient < handle
             %                  - storageStability: The storageStabilitys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('storageStability','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('storageStability','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3428,11 +3428,11 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('substrate','',@ischar);
-            parser.addParamValue('reactionPartners','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('substrate','',@ischar);
+            parser.addParameter('reactionPartners','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3497,17 +3497,17 @@ classdef BrendaClient < handle
             %                  - organismProducts: The organismProductss stored in the BRENDA database
             %                  - reversibility: The reversibilitys stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('substrates','',@ischar);
-            parser.addParamValue('commentarySubstrates','',@ischar);
-            parser.addParamValue('literatureSubstrates','',@ischar);
-            parser.addParamValue('organismSubstrates','',@ischar);
-            parser.addParamValue('products','',@ischar);
-            parser.addParamValue('commentaryProducts','',@ischar);
-            parser.addParamValue('literatureProducts','',@ischar);
-            parser.addParamValue('organismProducts','',@ischar);
-            parser.addParamValue('reversibility','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('substrates','',@ischar);
+            parser.addParameter('commentarySubstrates','',@ischar);
+            parser.addParameter('literatureSubstrates','',@ischar);
+            parser.addParameter('organismSubstrates','',@ischar);
+            parser.addParameter('products','',@ischar);
+            parser.addParameter('commentaryProducts','',@ischar);
+            parser.addParameter('literatureProducts','',@ischar);
+            parser.addParameter('organismProducts','',@ischar);
+            parser.addParameter('reversibility','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3576,11 +3576,11 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('subunits','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('subunits','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3649,11 +3649,11 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('synonyms','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('synonyms','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3702,9 +3702,9 @@ classdef BrendaClient < handle
             %                  - ecNumber: The ecNumbers stored in the BRENDA database
             %                  - systematicName: The systematicNames stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('systematicName','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('systematicName','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3775,12 +3775,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('temperatureOptimum','',@ischar);
-            parser.addParamValue('temperatureOptimumMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('temperatureOptimum','',@ischar);
+            parser.addParameter('temperatureOptimumMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3851,12 +3851,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('temperatureRange','',@ischar);
-            parser.addParamValue('temperatureRangeMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('temperatureRange','',@ischar);
+            parser.addParameter('temperatureRangeMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -3927,12 +3927,12 @@ classdef BrendaClient < handle
             %                  - commentary: The commentarys stored in the BRENDA database
             %                  - organism: The organisms stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('temperatureStability','',@ischar);
-            parser.addParamValue('temperatureStabilityMaximum','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('temperatureStability','',@ischar);
+            parser.addParameter('temperatureStabilityMaximum','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
@@ -4006,14 +4006,14 @@ classdef BrendaClient < handle
             %                  - organism: The organisms stored in the BRENDA database
             %                  - ligandStructureId: The ligandStructureIds stored in the BRENDA database
             parser=inputParser();
-            parser.addParamValue('ecNumber','',@ischar);
-            parser.addParamValue('organism','',@ischar);
-            parser.addParamValue('turnoverNumber','',@ischar);
-            parser.addParamValue('turnoverNumberMaximum','',@ischar);
-            parser.addParamValue('substrate','',@ischar);
-            parser.addParamValue('commentary','',@ischar);
-            parser.addParamValue('ligandStructureId','',@ischar);
-            parser.addParamValue('literature','',@ischar);
+            parser.addParameter('ecNumber','',@ischar);
+            parser.addParameter('organism','',@ischar);
+            parser.addParameter('turnoverNumber','',@ischar);
+            parser.addParameter('turnoverNumberMaximum','',@ischar);
+            parser.addParameter('substrate','',@ischar);
+            parser.addParameter('commentary','',@ischar);
+            parser.addParameter('ligandStructureId','',@ischar);
+            parser.addParameter('literature','',@ischar);
             parser.parse(varargin{:})
             parameters = self.buildParamString(parser.Results,parser.UsingDefaults);
             import javax.xml.namespace.*;
