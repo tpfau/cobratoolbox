@@ -88,6 +88,7 @@ classdef BrendaClient < handle
                 result = struct();
             end
         end
+
         function parameters = buildParamString(self,Results,Defaults)
             parameters = {};
             resultNames = fieldnames(Results);
