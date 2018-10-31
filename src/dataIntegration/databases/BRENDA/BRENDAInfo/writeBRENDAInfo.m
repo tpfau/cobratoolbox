@@ -11,10 +11,8 @@ function writeBRENDAInfo(brendaInfo, folderName)
 %                       BRENDAInfo.mat) (default Folder
 %                       'CBT_ROOT/databases/BRENDA')
 
-if ~exist('folderName','var')
-    CBT_Folder = fileparts(which('initCobraToolbox.m'));
-    % define the default FolderName
-    folderName = [CBT_Folder filesep 'databases' filesep 'BRENDA'];    
+if ~exist('folderName','var')    
+    folderName = getBRENDADefaultFolder();
 end
 if ~exist(folderName,'file')
     mkdir(folderName);
