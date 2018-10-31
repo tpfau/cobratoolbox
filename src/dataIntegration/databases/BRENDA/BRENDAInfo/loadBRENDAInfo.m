@@ -10,8 +10,8 @@ function [brendaInfo] = loadBRENDAInfo(folderName)
 %
 % NOTE: 
 %    States of the info are:
-%    0 : Checked, and does not exist
-%    1 : Not checked, not downloaded    
+%    0 : Not checked, not downloaded    
+%    1 : Checked, and does not exist
 %    2 : Checked, and does exist;
 %    3 : Exists and Downloaded
 
@@ -42,10 +42,10 @@ if exist([folderName filesep 'BRENDAReg.mat'],'file')
         brendaInfo = db;
     end
 else
-    % This is empty, so we just give a new struct.
-    brendaInfo = struct('ECNumber','1.1.1.1','KM',0,'MW',0,'PATH',0,...
-                             'SA',0,'KCAT',0);
-    db = brendaInfo
+    % This is empty, so we just give a new struct.    
+    db = initBRENDAInfo();
+    writeBRENDAInfo(db,folderName);
+    brendaInfo = db;
 end
 end
 

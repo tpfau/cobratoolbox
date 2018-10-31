@@ -17,7 +17,7 @@ existingEntries = {brendaInfo.ECNumber};
 entriesToUpdate = {updateData.ECNumber};
 [pres,pos] = ismember(entriesToUpdate,existingEntries);
 fieldsToUpdate = setdiff(fieldnames(updateData),'ECNumber');
-infoToAdd = initBRENDAInfo(entriesToUpdate(~pres));
+infoToAdd = getBRENDADefaultInfoStruct(entriesToUpdate(~pres));
 % now, update the data in the fields from the update data
 for i = 1:numel(fieldsToUpdate)
     cField = fieldsToUpdate{i};
