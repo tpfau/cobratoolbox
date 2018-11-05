@@ -18,10 +18,8 @@ function [brendaInfo] = loadBRENDAInfo(folderName)
 persistent db
 persistent lastMod
 
-if ~exist('folderName','var')
-   CBT_Folder = fileparts(which('initCobraToolbox.m'));
-    % define the default FolderName
-    folderName = [CBT_Folder filesep 'databases' filesep 'BRENDA'];
+if ~exist('folderName','var')   
+    folderName = getBRENDADefaultFolder();
 end
 
 % initialize the availability struct (indicating what has aready been

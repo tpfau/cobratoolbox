@@ -29,7 +29,7 @@ end
 ECNumbers = unique(horzcat(ECs.KM,ECs.MW,ECs.PATH,ECs.SEQ,ECs.SA,ECs.KCAT));
 brendaInfo = columnVector(struct('ECNumber',ECNumbers,'KM',1,...
                              'MW',1,'PATH',1,...
-                             'SA',1,'KCAT',0,'SEQ',1)); 
+                             'SA',1,'KCAT',1,'SEQ',1)); 
 % get all elements not in the update list, these can't have the respective
 % field, i.e. value of 0.
 

@@ -1,13 +1,23 @@
-function defaultData = getBRENDADefailtData(bclient,fieldName)
+function defaultData = getBRENDADefaultData(fieldName)
 % get Default Data for BRENDA structure.
 %
 
 persistent datastore
-
-if isempty(datastore)
-    datastore = containers.Map();
+folder = fileparts(which(mfilename));
+if isempty(datastore)    
+    % try loading the Defaults, if they don't exist, initialize an empty
+    % map.
+    try
+        load([folder filesep 'BRENDADefaults.mat'],'datastore');
+    catch ME
+        datastore = containers.Map();
+    end
 end
+changed = false;
+% if a field is missing, initialize it
 if ~datastore.isKey(fieldName)
+    bclient = startBRENDAClient();
+    changed = true;
     switch fieldName
         case 'KM'
             data = bclient.getKmValue('ecNumber', '1.1.1.1');
@@ -26,6 +36,9 @@ if ~datastore.isKey(fieldName)
     datastore(fieldName) = data;
 end
 defaultData = datastore(fieldName);
+if changed
+    save([folder filesep 'BRENDADefaults.mat'],'datastore');
+end
 
 end
 

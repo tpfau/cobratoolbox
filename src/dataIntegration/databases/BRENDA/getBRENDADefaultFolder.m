@@ -1,7 +1,7 @@
-function folderName = getBRENDADEfaultFolder()
+function folderName = getBRENDADefaultFolder()
 % get the Default FolderName for the BRENDA Database
 % USAGE:
-%    folderName = getBRENDADEfaultFolder()
+%    folderName = getBRENDADefaultFolder()
 %
 % OUTPUT:
 %    folderName:        The Foldername BRENDA data is normally stored to.

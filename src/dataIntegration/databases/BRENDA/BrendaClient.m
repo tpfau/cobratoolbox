@@ -53,7 +53,7 @@ classdef BrendaClient < handle
                 parameters = [userName ',' lower(password) ',ecNumber*1.1.1.1#organism*Mus musculus'];
                 call.setOperationName(QName('http://soapinterop.org/', 'getKmValue'));
                 resultString = call.invoke( {parameters} );
-                if isempty(regexp(resultString,'Authentication required'))
+                if isempty(regexp(resultString,'Authentication required','ONCE'))  && isempty(regexp(resultString,'Unknown user.','ONCE'))
                     self.password = lower(password);
                     self.userName = userName;
                     detailscorrect = true;
@@ -85,7 +85,7 @@ classdef BrendaClient < handle
                 structdata = structdata(:);
                 result = struct(structdata{:});
             else
-                result = struct();
+                result = struct([]);
             end
         end
 

@@ -1,9 +1,8 @@
-function ECs = getBrendaECNumbersForType(bclient, field, folderName)
+function ECs = getBRENDAECNumbersForType(field, folderName)
 % Get the ECNumbers which have the relevant information from BRENDA
 % USAGE:
-%    ecNumbers = getBrendaECNumbersForType(bclient,field)
+%    ecNumbers = getBRENDAECNumbersForType(bclient,field)
 % INPUT:
-%    bclient:           The BrendaClient to use to connect to BRENDA.
 %    field:             The field to retrieve data for
 %                       must be one of: {'KM','MW','PATH','SA','KCAT'});
 % OPTIONAL INPUT:
@@ -19,36 +18,18 @@ function ECs = getBrendaECNumbersForType(bclient, field, folderName)
 %
 
 if ~exist('folderName','var')
-    CBT_Folder = fileparts(which('initCobraToolbox.m'));
-    % define the default FolderName
-    folderName = [CBT_Folder filesep 'databases' filesep 'BRENDA'];
+    folderName = getBRENDADEfaultFolder();
 end
+field = getBRENDAFields(field);
+if iscell(field)
+    field = field{1};
+end
+% load the Info
+BRENDAInfo = loadBRENDAInfo(folderName);
+fieldInfo = [BRENDAInfo.(field)];
+% get all ECs that are available or already downloaded.
+relevants = fieldInfo >=2;
+ECs = {BRENDAInfo(relevants).ECNumber}';
 
-if ~exist(folderName','file')
-    mkdir(folderName);
-end
 
-switch field
-    case 'KM'
-        ECs = bclient.getEcNumbersFromKmValue();        
-    case 'MW'
-        ECs = bclient.getEcNumbersFromMolecularWeight();
-    case 'PATH'
-        ECs = bclient.getEcNumbersFromPathway();
-    case 'SEQ'
-        ECs = bclient.getEcNumbersFromSequence();
-    case 'SA'
-        ECs = bclient.getEcNumbersFromSpecificActivity();
-    case 'KCAT'
-        ECs = bclient.getEcNumbersFromTurnoverNumber();
-end
-updateData = struct('ECNumber',ECs,field,2);
-% get all elements not in the update list, these can'T have the respective
-% field, i.e. value of 1.
-brendaInfo = loadBRENDAInfo(folderName);
-existingEntries = {brendaInfo.ECNumber};
-foundEntries = {updateData.ECNumber};
-updateData2 = struct('ECNumber',setdiff(existingEntries,foundEntries),field,1);
-updateData = [columnVector(updateData);columnVector(updateData2)];
-updateLocalBRENDAInfo(updateData,folderName);
 end
