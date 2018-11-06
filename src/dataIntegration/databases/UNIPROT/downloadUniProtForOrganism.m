@@ -18,6 +18,8 @@ function uniprotStruct = downloadUniProtForOrganism(organismName, varargin)
 %                       restrict the number of obtained results.
 %                       In addition the keyword 'startPos' is allowed which will
 %                       indicate the position at which to start the search
+%                       Finally `folderName` is an allowed key word to
+%                       indicate a folder to store the data to.
 %
 % OUTPUT:
 %    uniprotStruct:     a struct containing data from the Uniprot Database.
@@ -32,6 +34,7 @@ function uniprotStruct = downloadUniProtForOrganism(organismName, varargin)
 
 maxResults = inf;
 startResult = 0;
+folderName = getUniProtDefaultFolder();
 if numel(varargin) > 0    
     maxPos = find(ismember(varargin(1:2:end),'maxResults'));        
     if ~isempty(maxPos)
@@ -45,13 +48,19 @@ if numel(varargin) > 0
         % delete the entry
         varargin((2*startPos-1):2*startPos) = []; 
     end
+    folderPos = find(ismember(varargin(1:2:end),'folderName'));        
+    if ~isempty(folderPos)
+        folderName = varargin{2*folderPos};
+        % delete the entry
+        varargin((2*folderPos-1):2*folderPos) = []; 
+    end
 end
 
 % we first want to know how many responses there are to fetch.
 request = matlab.net.http.RequestMessage(); 
 numberOfEntryHeader = 'X-Pagination-TotalRecords';
 responseCount = 0;
-[response] = request.send(['https://www.ebi.ac.uk/proteins/api/proteins?offset=0&size=1&organism=' urlencode('Homo Sapiens')]);
+[response] = request.send(['https://www.ebi.ac.uk/proteins/api/proteins?offset=0&size=1&organism=' urlencode(organismName)]);
 % get the right header and determine the responseCount.
 for i = 1:numel(response.Header)
     if strcmp(numberOfEntryHeader,response.Header(i).Name)
@@ -59,16 +68,20 @@ for i = 1:numel(response.Header)
     end
 end
 
-outputs = cell(ceil((responseCount-startResult)/100),1);
-for entry=1:ceil((responseCount-startResult)/100)
-    offset = startResult + (entry-1) * 100;
-    response = webread('https://www.ebi.ac.uk/proteins/api/proteins','offset',offset,'size',100,'organism',organismName);
+outputs = cell(ceil((responseCount-startResult)/1000),1);
+fprintf('Downloading %i entries from Uniprot\n',responseCount-startResult);
+showprogress(0,'Downloading from Uniprot');
+for entry=1:ceil((responseCount-startResult)/1000)
+    offset = startResult + (entry-1) * 1000;    
+    response = webread('https://www.ebi.ac.uk/proteins/api/proteins','offset',offset,'size',1000,'organism',organismName);
     if iscell(response)
         data = cellfun(@(x) parseUniProtData(x,varargin{:}), response);
     else
         data = cellfun(@(x) parseUniProtData(x,varargin{:}), mat2cell(response,ones(numel(response),1),1));
     end
-    outputs{entry,1} = data;   
+    outputs{entry,1} = data;       
+    updateUniprotData(organismName,data,folderName);    
+    showprogress((entry*1000)/(responseCount-startResult),'Downloading fom Uniprot');
 end
 uniprotStruct = vertcat(outputs{:});
 if maxResults < numel(uniprotStruct)

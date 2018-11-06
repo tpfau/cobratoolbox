@@ -69,16 +69,15 @@ if isfield(inputStruct.protein,'recommendedName')
     end    
 end
 % then potential submitted names
+
 if isfield(inputStruct.protein,'submittedName')
-    proteins = [proteins, cellfun(@(x) char(x.value),{inputStruct.protein.submittedName.fullName},'Uniform',0)];
+    if isstruct(inputStruct.protein.submittedName)
+        proteins = [proteins, cellfun(@(x) char(x.value),{inputStruct.protein.submittedName.fullName},'Uniform',0)];
+    else
+        proteins = [proteins, cellfun(@(x) char(x.value),cellfun(@(x) x.fullName, inputStruct.protein.submittedName,'Uniform', 0),'Uniform',0)];
+    end
 end
 uniprotData.Proteins = proteins;
-
-%subs = struct('name','','short','');
-%if isfield(inputStruct.protein,'component')
-%    subs = cellfun(@parseComponents, inputStruct);
-%end
-%uniprotData.Subunits = subs;
 
 for i=1:2:numel(varargin)    
     uniprotData.(varargin{i}) = varargin{i+1}(inputStruct);
