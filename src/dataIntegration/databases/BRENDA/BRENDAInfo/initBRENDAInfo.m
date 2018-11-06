@@ -1,10 +1,7 @@
 function [brendaInfo] = initBRENDAInfo()
-% Initialize a BRENDA Info struct for the given EC Numbers
+% Initialize a BRENDA Info struct 
 % USAGE:
-%    [brendaInfo] = initBRENDAInfo(ECNumbers)
-%
-% INPUT:
-%    ECNumbers:     A Cell array of EC Numbers.
+%    [brendaInfo] = initBRENDAInfo()
 %
 % OUTPUT:
 %    brendaInfo:     A Structure Array with ECNumbers and additional

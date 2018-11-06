@@ -80,10 +80,6 @@ classdef BrendaClient < handle
             end
         end
         
-        
-        function getCall(self)
-        end
-        
         function result = parseArray(self, resultString)
             result = strsplit(resultString,'!');
         end

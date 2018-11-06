@@ -10,7 +10,7 @@ function updateLocalBRENDAData(updatedData, folderName)
 %    folderName:        The folder the data is stored in (default Folder
 %                       'CBT_ROOT/databases/BRENDA')
 
-if exist('folderName','var')
+if ~exist('folderName','var')
     folderName = getBRENDADefaultFolder();
 end
 

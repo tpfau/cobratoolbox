@@ -47,7 +47,8 @@ parser.parse(varargin{:});
 downloadMissing = parser.Results.downloadMissing;
 updateDataOlderThan = parser.Results.updateDataOlderThan;
 ECNumbers = parser.Results.ECNumbers;
-brendaInfo = loadBRENDAInfo();
+folderName = parser.Results.folderName;
+brendaInfo = loadBRENDAInfo(folderName);
 if isempty(db)
     % we initialize a struct with all potential EC Numbers.
     db = getBRENDADefaultDataStruct({brendaInfo.ECNumber});    
@@ -69,7 +70,6 @@ end
 % get the current system time
 ctime = now;
 
-folderName = parser.Results.folderName;
 for i = 1:numel(ECNumbers)
     ecfile = [folderName filesep ECNumbers{i} '.mat'];
     if ~exist(ecfile,'file') 
