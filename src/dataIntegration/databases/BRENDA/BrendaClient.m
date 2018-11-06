@@ -18,17 +18,36 @@ classdef BrendaClient < handle
         brendaURL = 'http://www.brenda-enzymes.org/soap/brenda_server.php';
     end
     methods
-        function obj = BrendaClient()
+        
+        function obj = BrendaClient(userName, password)
+            % Default Constructor
+            % USAGE:
+            %    obj = BrendaClient(userName, password)
+            % OPTIONAL INPUTS:
+            %    userName:      The BRENDA User Name
+            %    password:      The BRENDA Password
             loadAxis();
-            obj.init()
+            if nargin == 2
+                obj.init(userName, password)
+            else
+                obj.init();
+            end
         end
         
-        function init(self)
+        function init(self, userName, password)
             import org.apache.axis.client.*;
             import javax.xml.namespace.*;
             import java.security.*;
             import java.math.*;
             self.brendaService = Service();
+            if nargin > 2
+                self.userName = userName;                
+                md = MessageDigest.getInstance('SHA-256');
+                hash = md.digest(double(password));
+                bi = BigInteger(1, hash);
+                self.password = char(java.lang.String.format('%064x', bi));
+                return
+            end
             %get User Name and password
             detailscorrect = false;
             while ~detailscorrect

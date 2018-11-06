@@ -11,6 +11,9 @@ Thumbs.db
 # Simulink Code Generation
 slprj/
 
+# Downloaded databases
+databases/*
+
 # Session info
 octave-workspace
 

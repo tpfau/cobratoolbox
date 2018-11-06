@@ -65,7 +65,7 @@ end
 [pres,pos] = ismember(ECsToDo,{BRENDAInfo.ECNumber});
 
 continueInterrupted = parser.Results.continueInterrupted;
-
+brendaData = getBRENDADefaultDataStruct(ECsToDo);
 if ~continueInterrupted || isempty(lastStart)
     lastStart = 1;    
     lastField = 1;
@@ -114,7 +114,8 @@ for lastField = lastField:numel(fields)
                             [defaultStruct.(cStructField)] = deal(data.(cStructField));
                         end
                     end
-                    updateLocalBRENDAData(defaultStruct,cField,folderName);
+                    brendaData(lastStart).(cField) = defaultStruct;
+                    updateLocalBRENDAData(brendaData(lastStart),folderName);
                     BRENDAInfo(pos(lastStart)).(cField) = 3;
                 end
                 %update the finishUp function.
