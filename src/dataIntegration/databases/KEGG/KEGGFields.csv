@@ -1,0 +1,26 @@
+PATHWAY		MODULE		ORTHOLOGY		GENOME		GENES		COMPOUND		GLYCAN		REACTION		RCLASS		ENZYME		NETWORK		VARIANT		DISEASE		DRUG		DGROUP		ENVIRON	
+Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file	Web page      	Flat file
+Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY	Entry	ENTRY
+Name	NAME	Name	NAME	Name	NAME	Name	NAME	Gene name	NAME	Name	NAME	Name	NAME	Name	NAME	Definition	DEFINITION	Name	NAME	Name	NAME	Name	NAME	Name	NAME	Name	NAME	Name	NAME	Name	NAME
+Description	DESCRIPTION	Definition	DEFINITION	Definition	DEFINITION	Definition	DEFINITION	Definition	DEFINITION	Formula	FORMULA	Composition	COMPOSITION	Definition	DEFINITION	Reactant pair	RPAIR	Class	CLASS	Definition	DEFINITION	Gene	GENE	Description	DESCRIPTION	Product	PRODUCT	Stem	STEM	Category	CATEGORY
+Class	CLASS	Orthology	ORTHOLOGY	Pathway	PATHWAY	Annotation	ANNOTATION	KO	ORTHOLOGY	Exact mass	EXACT_MASS	Mass	MASS	Equation	EQUATION	Reaction	REACTION	Sysname	SYSNAME	Expanded	EXPANDED	Organism	ORGANISM	Category	CATEGORY	Formula	FORMULA	Member	MEMBER	Component	COMPONENT
+Pathway map	PATHWAY_MAP	Class	CLASS	Module	MODULE	Taxonomy	TAXONOMY	Organism	ORGANISM	Mol weight	MOL_WEIGHT	Remark	REMARK	Remark	REMARK	Enzyme	ENZYME	Reaction(IUBMB)	REACTION	Class	CLASS	Variation	VARIATION	Brite	BRITE	Exact mass	EXACT_MASS	Class	CLASS	Source	SOURCE
+Module	MODULE	Pathway	PATHWAY	Disease	DISEASE	Data source	DATA_SOURCE	Pathway	PATHWAY	Sequence	SEQUENCE	Comment	COMMENT	Comment	COMMENT	Pathway	PATHWAY	Reaction(KEGG)	ALL_REAC	Type	TYPE	Network	NETWORK	Pathway	PATHWAY	Mol weight	MOL_WEIGHT	Remark	REMARK	Remark	REMARK
+Network	NETWORK	Brite	BRITE	Brite	BRITE	Original DB	ORIGINAL_DB	Module	MODULE	Remark	REMARK	Reaction	REACTION	Reaction class	RCLASS	Orthology	ORTHOLOGY	Substrate	SUBSTRATE	Pathway	PATHWAY	Reference	REFERENCE	Network	NETWORK	Component	COMPONENT	Comment	COMMENT	Comment	COMMENT
+Disease	DISEASE	Organism	ORGANISM	Other DBs	DBLINKS	Keywords	KEYWORDS	Network	NETWORK	Comment	COMMENT	Pathway	PATHWAY	Enzyme	ENZYME			Product	PRODUCT	Disease	DISEASE			Gene	GENE	Sequence	SEQUENCE			Brite	BRITE
+Drug	DRUG	Gene	GENE	Genes	GENES	Disease	DISEASE	Disease	DISEASE	Reaction	REACTION	Module	MODULE	Pathway	PATHWAY			Comment	COMMENT	Gene	GENE			Carcinogen	CARCINOGEN	Source	SOURCE			Other DBs	DBLINKS
+Other DBs	DBLINKS	Reaction	REACTION	Reference	REFERENCE	Comment	COMMENT	Drug target	DRUG_TARGET	Pathway	PATHWAY	Enzyme	ENZYME	Orthology	ORTHOLOGY			Pathway	PATHWAY	Variant	VARIANT			Env factor	ENV_FACTOR	Class	CLASS				
+Organism	ORGANISM	Compound	COMPOUND	Sequence	SEQUENCE	Chromosome	CHROMOSOME	Brite	BRITE	Module	MODULE	Orthology	ORTHOLOGY	Reference	REFERENCE			Orthology	ORTHOLOGY	Perturbant	PERTURBANT			Pathogen	PATHOGEN	Remark	REMARK				
+Orthology	ORTHOLOGY	Comment	COMMENT			Plasmid	PLASMID	SSDB	SSDB	Enzyme	ENZYME	Brite	BRITE					Genes	GENES	Metabolite	METABOLITE			Module	MODULE	Efficacy	EFFICACY				
+Gene	GENE	Other DBs	DBLINKS			Statistics	STATISTICS	Motif	MOTIF	Brite	BRITE	Reference	REFERENCE					Other DBs	DBLINKS	Reference	REFERENCE			Drug	DRUG	Comment	COMMENT				
+Enzyme	ENZYME	Reference	REFERENCE			Other DBs	DBLINKS	Other DBs	DBLINKS	Reference	REFERENCE	Other DBs	DBLINKS					Sequence	SEQUENCE					Comment	COMMENT	Target	TARGET				
+Reaction	REACTION	KO module	REF_MODULE			Reference	REFERENCE	Structure	STRUCTURE	Other DBs	DBLINKS	NODE	NODE					Reference	REFERENCE					Other DBs	DBLINKS	Metabolism	METABOLISM				
+Compound	COMPOUND							Position	POSITION	ATOM	ATOM	EDGE	EDGE											Reference	REFERENCE	Interaction	INTERACTION				
+Reference	REFERENCE							AA seq	AASEQ	BOND	BOND	BRACKER	BRACKER											SUPERGRP	SUPERGRP	Biosynthesis	SYN_MAP				
+Related pathway	REL_PATHWAY							NT seq	NTSEQ	BRACKET	BRACKET															Structure map	STR_MAP				
+KO pathway	KO_PATHWAY																									Other map	OTHER_MAP				
+																										Brite	BRITE				
+																										Other DBs	DBLINKS				
+																										ATOM	ATOM				
+																										BOND	BOND				
+																										BRACKET	BRACKET				

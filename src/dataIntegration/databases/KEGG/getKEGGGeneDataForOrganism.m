@@ -1,7 +1,7 @@
-function keggData = getKEGGDataForOrganism(KEGGOrganism)
+function keggData = getKEGGGeneDataForOrganism(KEGGOrganism)
 % parse a KEGG list response into a matlab struct.
 % USAGE:
-%    keggData = parseKEGGOrganismList(KEGGResponse)
+%    keggData = getKEGGGeneDataForOrganism(KEGGOrganism)
 %
 % INPUT:
 %    KEGGOrganism:      The KEGG organism identifier
