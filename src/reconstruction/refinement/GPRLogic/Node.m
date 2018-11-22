@@ -86,7 +86,7 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
         res = regexprep(res,'([0-9]+)','x($1)');        
         % if this is now either true, or false, this indicates it is an
         % empty formula, so we return an empty string.
-        if srfind(res,'$')
+        if strfind(res,'$')
             res = '';
         end
         
@@ -102,9 +102,10 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
         %                   by or )
         %  
             import org.logicng.transformations.dnf.*
+            dnfNode = self.copy();
             dnfconv = DNFFactorization();
-            dnfconv.apply(self.formula,false);            
-            dnfNode = self;
+            dnfconv.apply(dnfNode);            
+            
         end
         
         
@@ -117,8 +118,8 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
         %    res:           A Node in CNF form (i.e. and or-clauses separated
         %                   by and )
         %
-            self.formula.cnf();
-            cnfNode = self;
+            cnfNode = self.copy();
+            cnfNode.formula.cnf();            
         end
         
         function reduce(self)

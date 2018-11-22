@@ -37,7 +37,7 @@ classdef FormulaParser < handle
         %    Head:       The Head of a Tree representing the formula
         %  
         form = self.formulaFactory.parse(regexprep(formula,'x\(([0-9]+)\)','$1'));
-        Head =NewNode();
+        Head =Node();
         Head.formula = form;
         end
                         

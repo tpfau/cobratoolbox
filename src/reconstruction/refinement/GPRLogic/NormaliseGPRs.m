@@ -26,13 +26,8 @@ for i = 1:numel(gprs)
         continue
     end
     fprintf('Currently calculating GPR #%i: \n %s\n',i,gprs{i});
-    Head = FP.parseFormula(gprs{i});
-    Head.reduce();    
+    Head = FP.parseFormula(gprs{i});        
     NewHead = Head.convertToDNF();    
-    NewHead.reduce();
-    if isa(NewHead,'OrNode')
-        NewHead.removeDNFduplicates();
-    end
     newrules{i} = NewHead.toString(1);    
 end
 Outmodel = model;
