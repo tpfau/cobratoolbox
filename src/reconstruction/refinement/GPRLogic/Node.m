@@ -101,16 +101,14 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
         %    res:           A Node in DNF form (i.e. and clauses separated
         %                   by or )
         %  
-            import org.logicng.transformations.dnf.*
-            dnfNode = self.copy();
-            dnfconv = DNFFactorization();
-            dnfconv.apply(dnfNode);            
-            
+            QMConverter = org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm();
+            dnfNode = self.copy();            
+            dnfNode.formula = QMConverter.compute(dnfNode.formula);            
         end
         
         
         function cnfNode = convertToCNF(self)
-        % Convert to a CNF Node.
+        % Convert to a minimal CNF Node.
         % USAGE:
         %    dnfNode = Node.convertToCNF()
         %
@@ -119,8 +117,79 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
         %                   by and )
         %
             cnfNode = self.copy();
-            cnfNode.formula.cnf();            
+            cnfNode.formula = cnfNode.formula.cnf();   
+            %Now, we have to reduce this formula....
+             if ~isa(cnfNode.formula,'org.logicng.formulas.Literal')
+                % in this case there would be nothing to do, so we don't do anything.                            
+                setSize = cnfNode.formula.numberOfOperands(); % This is the number of elements                                
+                setSizes = zeros(setSize,1);
+                setsToCheck = cell(setSize,1);
+                minSize = inf;
+                maxSize = 0;
+                i = 1;
+                iter = cnfNode.formula.iterator();
+                while iter.hasNext
+                    collection = iter.next().literals();
+                    pos = Node.getLiteralsFromCollection(collection);
+                    setsToCheck{i} = pos;
+                    setSizes(i) = numel(pos);
+                    minSize = min([minSize,setSizes(i)]);
+                    maxSize = max([maxSize,setSizes(i)]);
+                    i = i+1;
+                end
+                % now, this will be computationally expensive
+                % all minimal Sets are automatically added.
+                cSets = setSizes == minSize;
+                newSets = setsToCheck(cSets);
+                setsToCheck(cSets) = [];
+                setSizes(cSets) = [];
+                for i = minSize+1:maxSize
+                    % we go over all set sizes
+                    cSets = setSizes == i;
+                    currentSets = setsToCheck(cSets);
+                    setsToKeep = true(sum(cSets),1);
+                    % remove the current sets from the checkup.
+                    setsToCheck(cSets) = [];
+                    setSizes(cSets) = [];
+                    for l = 1:numel(currentSets)
+                        % Check all sets of that size
+                        setToCheck = currentSets{l};
+                        for j = 1:numel(newSets)
+                            % against all sets that should be in the new
+                            % formula
+                            compSet = newSets{j};
+                            newSetSize = numel(compSet);
+                            cresult = false(newSetSize,1);                        
+                            for k = 1:newSetSize
+                                % and look over all elements whether we can
+                                % find them.
+                                % this formulation is more efficient than
+                                % ismember or use of any.
+                                for m = 1:numel(setToCheck)
+                                    if compSet(k) == setToCheck(m)
+                                        cresult(k) = true;
+                                        break;
+                                    end
+                                end
+                            end
+                            if all(cresult)
+                                setsToKeep(l) = false;
+                                % Stop lookup, if there is one, than we can
+                                % skip it.
+                                break;
+                            end
+                        end
+                    end
+                    % now, clean up
+                    if any(setsToKeep)
+                        newSets = [newSets;currentSets(setsToKeep)];
+                    end
+                end
+                newFormula = strjoin(cellfun(@(x) ['(' strjoin(x,' | ') ')'], cellfun(@(y) arrayfun(@num2str, y, 'uniform', 0),newSets,'Uniform', 0),'Uniform',0),' & ');
+                cnfNode.formula = cnfNode.formula.factory.parse(newFormula);
+            end
         end
+        
         
         function reduce(self)
         % DEPRACATED. Nothing to do as this happens automatically
@@ -148,7 +217,12 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
         % NOTE:
         %    The Node will no longer contain the corresponding literal
         %
-        if isnumeric(literID)
+        
+        if ~exist('keepClauses','var')
+            keepClauses = true;
+        end
+        
+        if isnumeric(literalID)
            literalID = num2str(literalID);
         end
         tf = true;
@@ -183,7 +257,7 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
         
         function nodeCopy = copy(self)            
             fp = FormulaParser();
-            nodeCopy = fp.parseFormula(self.toString());
+            nodeCopy = fp.parseFormula(self.toString(true));
         end
                        
         function res = contains(self,literal)
@@ -212,7 +286,7 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
             %
             
             collection = self.formula.literals;
-            literals = getLiteralsFromCollection(collection)        
+            literals = Node.getLiteralsFromCollection(collection);        
         end           
         
         function tf = isDNF(self)
@@ -256,24 +330,23 @@ classdef (HandleCompatible) Node < handle & matlab.mixin.Heterogeneous
                 getCNFSets = false;
             end
             if getCNFSets                
-                self.formula.cnf();
+                NodeToCheck = self.convertToCNF();
             else
-                dnfconv = org.logicng.transformations.dnf.DNFFactorization();
-                dnfconv.apply(self.formula);
+                NodeToCheck = self.convertToDNF();
             end
             
-            if isa(self.formula,'org.logicng.formulas.Literal')
+            if isa(NodeToCheck.formula,'org.logicng.formulas.Literal')
                 geneSets = cell(1,1);
                 genePos = cell(1,1);
-                pos = str2double(char(self.formula.toString()));                
+                pos = str2double(char(NodeToCheck.formula.toString()));                
                 genePos{1} = pos;
                 geneSets{1} = geneNames(sort(pos));
             else
-                setSize = self.formula.numberOfOperands(); % This is the number of elements
+                setSize = NodeToCheck.formula.numberOfOperands(); % This is the number of elements
                                 
                 geneSets = cell(setSize,1);
                 genePos = cell(setSize,1);
-                iter = self.formula.iterator();
+                iter = NodeToCheck.formula.iterator();
                 i = 1;
                 while iter.hasNext
                     collection = iter.next().literals();

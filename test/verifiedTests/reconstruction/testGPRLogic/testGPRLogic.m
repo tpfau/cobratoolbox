@@ -30,15 +30,15 @@ modelNorm = NormaliseGPRs(model);
 %Now, testing this is slightly difficult, as the order of elements does not
 %necessarily have to be the same. 
 %we will do the following: The fifth is equivalent to clauses with these
-%positions:
-clauses = {[1,2,3],[1,2,4],[1,2,5],[1,4,5,6],[1,4,5],[1,2,4,5]};
+%positions, NOTE that gene 6 is actually removed during normalisation, as it is superceded by 145:
+clauses = {[1,2,3],[1,2,4],[1,2,5],[1,4,5]};
 %We will therefore check, whether all of those and only those clauses
 %exist)
 clausesToCheck = clauses;
 %Now, lets extract the clauses from the rules string
 clausesInModel = strsplit(modelNorm.rules{5},'|');
 %now, extract the numbers from the clauses
-positions = regexp(clausesInModel,'^|[\( ]x\((?<pos>[0-9]+)\)[ \)]|$','names'); %This simultaneously checks, that the format was adapted.
+positions = regexp(clausesInModel,'(^| )x\((?<pos>[0-9]+)\)( |$)','names'); %This simultaneously checks, that the format was adapted.
 for i = 1:numel(positions)
     cpos = cellfun(@str2num, {positions{i}.pos});    
     clauseFound = false;
@@ -55,7 +55,7 @@ assert(isempty(clausesToCheck));
 %Lets do the same for the grRules.
 
 clausesInModel = strsplit(strrep(modelNorm.grRules{5},'and','&'),'or');
-genes = regexp(clausesInModel,'^|[\( ](?<genes>[^\[\]\{\}\(\) &]+)[ \)]|$','names'); %This simultaneously checks, that the format was adapted.
+genes = regexp(clausesInModel,'(^| )(?<genes>[^\[\]\{\}\(\) &]+)( |$)','names'); %This simultaneously checks, that the format was adapted.
 clausesToCheck = cellfun(@(x) model.genes(x),clauses,'UniformOutput',0);
 for i = 1:numel(genes)
     cpos = {genes{i}.genes};    
@@ -106,15 +106,15 @@ modelNorm = rmfield(modelNorm,'grRules');
 modelNorm.rules{5} = head.toString(true);
 modelNorm = NormaliseGPRs(modelNorm);
 %now, if we remove the first gene, the clauses should be as follows:
-%(Essentially the first clauses minus the 1)
-clauses = {[2,3],[2,4],[2,5],[4,5,6],[4,5],[2,4,5]};
+%(Essentially the first clauses minus the 1, note that again the 6 is removed.)
+clauses = {[2,3],[2,4],[2,5],[4,5]};
 %We will therefore check, whether all of those and only those clauses
 %exist)
 clausesToCheck = clauses;
 %Now, lets extract the clauses from the rules string
 clausesInModel = strsplit(modelNorm.rules{5},'|');
 %now, extract the numbers from the clauses
-positions = regexp(clausesInModel,'^|[\( ]x\((?<pos>[0-9]+)\)[ \)]|$','names'); %This simultaneously checks, that the format was adapted.
+positions = regexp(clausesInModel,'(^|[\( ])x\((?<pos>[0-9]+)\)([ \)]|$)','names'); %This simultaneously checks, that the format was adapted.
 for i = 1:numel(positions)
     cpos = cellfun(@str2num, {positions{i}.pos});    
     clauseFound = false;
