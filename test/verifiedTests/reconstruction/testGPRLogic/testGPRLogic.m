@@ -107,26 +107,7 @@ modelNorm.rules{5} = head.toString(true);
 modelNorm = NormaliseGPRs(modelNorm);
 %now, if we remove the first gene, the clauses should be as follows:
 %(Essentially the first clauses minus the 1, note that again the 6 is removed.)
-clauses = {[2,3],[2,4],[2,5],[4,5]};
-%We will therefore check, whether all of those and only those clauses
-%exist)
-clausesToCheck = clauses;
-%Now, lets extract the clauses from the rules string
-clausesInModel = strsplit(modelNorm.rules{5},'|');
-%now, extract the numbers from the clauses
-positions = regexp(clausesInModel,'(^|[\( ])x\((?<pos>[0-9]+)\)([ \)]|$)','names'); %This simultaneously checks, that the format was adapted.
-for i = 1:numel(positions)
-    cpos = cellfun(@str2num, {positions{i}.pos});    
-    clauseFound = false;
-    for j = 1:numel(clausesToCheck)
-        if isempty(setxor(cpos,clausesToCheck{j}))
-            clausesToCheck(j) = [];
-            clauseFound = true;
-            break;
-        end
-    end
-    assert(clauseFound);
-end   
+
 assert(isempty(clausesToCheck));
 
 %Convert from DNF to CNF
