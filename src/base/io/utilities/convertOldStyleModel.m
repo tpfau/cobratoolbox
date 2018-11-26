@@ -249,4 +249,22 @@ if isfield(model,'metChEBIID')
         model.metChEBIID(numericIDs) = cellfun(@num2str, model.metChEBIID(numericIDs),'Uniform',0);
     end
 end
+
+if isfield(model,'metCompartments')
+    model.metComps = model.metCompartments;
+    model = rmfield(model,'metCompartments');
+elseif ~isfield(model,'metComps')
+    model.metComps = extractCompartmentsFromMets(model.mets);
+    % if we have no assigned compartments, then everything is moved to the
+    % cytosol.
+    if all(strcmp(model.metComps,'k'))
+        model.metComps(:) = {'c'}; 
+    end
+    model.comps = unique(model.metComps);
+    [compSymbol,compNames] = getDefaultCompartments();
+    [pres,pos] = ismember(compSymbol,model.comps);
+    model.compNames = model.comps;
+    model.compNames(pos(pres)) = compNames(pres);    
+end
+    
     
