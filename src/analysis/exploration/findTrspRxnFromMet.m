@@ -41,15 +41,20 @@ end
 model.S = sign(model.S);
 
 for i = 1:numel(searchMets)
-    metPos = strcmp(compLessMets,searchMets{i});
-    compMet = metPos & compPos;
+    % the position of the requested metabolite
+	origMetPos = strcmp(model.mets,metList{i});
+    % the positions of the metabolite in all other compartments.
+    targetPos = strcmp(compLessMets,searchMets{i}) & ~origMetPos;
+    % restrict to the target compartment (if required)
+    targetPos = targetPos & compPos;
     % The relevant reactions are those reactions, which have the given
     % metabolite AND have at least one other metabolite of the same type
     % with a different sign. or, in other words, that do have compmets
-    presence = sum(abs(model.S(compMet,:)),1) > 0;
-    totals = sum(abs(model.S(metPos,:)),1);
-    change = abs(sum(model.S(metPos,:),1));
-    relReacs = totals > change & presence;
+    origProd = model.S(origMetPos,:) > 0;    
+    origSubs = model.S(origMetPos,:) < 0;    
+    targetProd = model.S(targetPos,:) > 0;
+    targetSubs = model.S(targetPos,:) < 0;    
+    relReacs = origProd & any(targetSubs,1) | origSubs & any(targetProd,1);
     TrspRxns = [TrspRxns;model.rxns(relReacs)];
 end
 TrspRxns = unique(TrspRxns);
