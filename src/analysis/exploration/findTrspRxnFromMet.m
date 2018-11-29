@@ -17,33 +17,34 @@ function [TrspRxns] = findTrspRxnFromMet(model, metList, compFlag)
 %    TrspRxns:    List of transporters reactions
 %
 % .. Author: - Anne Richelle May 2017
+%            - Thomas Pfau - update to use metComps
 
 if nargin < 3
     compFlag={};
 end
 
 TrspRxns={};
-for i=1:numel(metList)
 
-    formulas={};
-    Name_met=metList{i};
-
-    % Find the reactions involving the metabolite
-    rxnsMets=findRxnsFromMets(model,Name_met);
-    formulas = printRxnFormula(model,rxnsMets,false);
-
-    for j=1:numel(formulas)
-        metaboliteList = parseRxnFormula(formulas{j});
-        [baseMetNames,compSymbols,uniqueMetNames,uniqueCompSymbols] = parseMetNames(metaboliteList);
-
-        if sum(strcmp(baseMetNames,[Name_met(1:end-3)]))== 2 && sum(strcmp(uniqueMetNames,[Name_met(1:end-3)]))== 1
-            if ~isempty(compFlag)
-                if sum(strcmp(uniqueCompSymbols,compFlag))== 1
-                    TrspRxns(end+1)=rxnsMets(j);
-                end
-            else
-                TrspRxns(end+1)=rxnsMets(j);
-            end
-        end
-    end
+% we will remove compartment parts from metabolites
+[~,compLessMets] = extractCompartmentsFromMets(model.mets);
+[~,searchMets] = extractCompartmentsFromMets(metList);
+if ~isempty(compFlag)
+    compPos = strcmp(model.metComps,compFlag);
+else
+    compPos = true(size(model.mets));
 end
+% only get directionality.
+model.S = sign(model.S);
+
+for i = 1:numel(serachMets)
+    metPos = strcmp(compLessMets,searchMets{i});
+    compMet = metPos & compPos;
+    % The relevant reactions are those reactions, which have the given
+    % metabolite AND have at least one other metabolite of the same type
+    % with a different sign. or, in other words, that do have compmets
+    presence = sum(abs(model.S(compMet,:)),1);
+    change = abs(sum(model.S(compMet,:),1));
+    relReacs = presence > change;
+    TrspRxns = [TrspRxns;model.rxns(relReacs)];
+end
+TrspRxns = unique(TrspRxns);

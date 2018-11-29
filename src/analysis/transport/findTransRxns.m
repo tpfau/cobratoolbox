@@ -53,12 +53,10 @@ end
 
 % initialize isNonexchangeTransport rxns vector
 isNonexchTrans = zeros(length(rxnInds), 1);
-% get compartment symbols for each metabolite
-[baseMetNames,compSymbols]=arrayfun(@parseMetNames, model.mets);
 for i = 1:length(rxnInds)
     rxnIndTmp=rxnInds(i);
     % get compartment symbols for each rxn
-    compSymbolsTmp=compSymbols(model.S(:,rxnIndTmp)~=0);
+    compSymbolsTmp=model.metComps(model.S(:,rxnIndTmp)~=0);
     % if there's more than 1 compartment involved, it's a transport rxn
     if length(unique(compSymbolsTmp))>1
         isNonexchTrans(i) = 1;
