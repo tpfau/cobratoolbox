@@ -25,6 +25,10 @@ end
 
 TrspRxns={};
 
+if ischar(metList)
+    metList = {metList};
+end
+
 % we will remove compartment parts from metabolites
 [~,compLessMets] = extractCompartmentsFromMets(model.mets);
 [~,searchMets] = extractCompartmentsFromMets(metList);
@@ -36,15 +40,16 @@ end
 % only get directionality.
 model.S = sign(model.S);
 
-for i = 1:numel(serachMets)
+for i = 1:numel(searchMets)
     metPos = strcmp(compLessMets,searchMets{i});
     compMet = metPos & compPos;
     % The relevant reactions are those reactions, which have the given
     % metabolite AND have at least one other metabolite of the same type
     % with a different sign. or, in other words, that do have compmets
-    presence = sum(abs(model.S(compMet,:)),1);
-    change = abs(sum(model.S(compMet,:),1));
-    relReacs = presence > change;
+    presence = sum(abs(model.S(compMet,:)),1) > 0;
+    totals = sum(abs(model.S(metPos,:)),1);
+    change = abs(sum(model.S(metPos,:),1));
+    relReacs = totals > change & presence;
     TrspRxns = [TrspRxns;model.rxns(relReacs)];
 end
 TrspRxns = unique(TrspRxns);
