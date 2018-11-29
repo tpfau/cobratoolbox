@@ -42,11 +42,11 @@ model.S = sign(model.S);
 
 for i = 1:numel(searchMets)
     % the position of the requested metabolite
-	origMetPos = strcmp(model.mets,metList{i});
+	origMetPos = strcmp(model.mets,metList{i});    
     % the positions of the metabolite in all other compartments.
     targetPos = strcmp(compLessMets,searchMets{i}) & ~origMetPos;
     % restrict to the target compartment (if required)
-    targetPos = targetPos & compPos;
+    targetPos = targetPos & compPos;    
     % The relevant reactions are those reactions, which have the given
     % metabolite AND have at least one other metabolite of the same type
     % with a different sign. or, in other words, that do have compmets
