@@ -36,7 +36,7 @@ else
     else
         gurobiproblem.modelsense = 'min';
     end
-    gurobiproblem.obj =  CobraProblem.c;
+    gurobiproblem.obj =  double(CobraProblem.c);
 end
 
 % set the basis, if provided
