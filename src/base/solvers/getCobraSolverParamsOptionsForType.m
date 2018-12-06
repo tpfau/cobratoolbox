@@ -16,13 +16,13 @@ switch solverType
     case 'LP'
         paramNames = {'minNorm', ...        % type of normalization used.
                       'printLevel', ...     % print Level
-                      'primalOnly', ...     % only solve for primal
+                      'primalOnly', ...     % only solve for primal % currently does not have an effect
                       'saveInput', ...      % save the input to a file (specified)
                       'feasTol', ...        % feasibility tolerance
                       'optTol', ...         % optimality tolerance
                       'solver', ...         % solver to use (overriding set solver)
                       'debug', ...          % run debgugging code
-                      'logFile', ...        % file (location) to write logs to
+                      'logFile', ...        % file (location) to write logs to                      
                       'lifting'};           % whether to lift a problem
 
     case 'QP'
