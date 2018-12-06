@@ -216,51 +216,17 @@ switch solver
     case 'gurobi'
      % Free academic licenses for the Gurobi solver can be obtained from
         % http://www.gurobi.com/html/academic.html
-        resultgurobi = struct('x',[],'objval',[],'pi',[]);
-        params = struct();
-        if cobraParams.printLevel == 0
-            params.OutputFlag = 0;
-            params.DisplayInterval = 1;
-        else
-            params.OutputFlag = 1;
-            params.DisplayInterval = 5;
-        end
-
-        params.Method = 0;    %-1 = automatic, 0 = primal simplex, 1 = dual simplex, 2 = barrier, 3 = concurrent, 4 = deterministic concurrent
-        params.Presolve = -1; % -1 - auto, 0 - no, 1 - conserv, 2 - aggressive
-        %Set tolerances
-        params.MIPGap = cobraParams.relMipGapTol;
-        if cobraParams.intTol <= 1e-09
-            params.IntFeasTol = 1e-09;
-        else
-            params.IntFeasTol = cobraParams.intTol;
-        end
-        params.FeasibilityTol = cobraParams.feasTol;
-        params.OptimalityTol = cobraParams.optTol;
-
-        params = updateStructData(params,solverParams);
-
-        if (isempty(MIQPproblem.csense))
-            clear MIQPproblem.csense
-            MIQPproblem.csense(1:length(b),1) = '=';
-        else
-            MIQPproblem.csense(MIQPproblem.csense == 'L') = '<';
-            MIQPproblem.csense(MIQPproblem.csense == 'G') = '>';
-            MIQPproblem.csense(MIQPproblem.csense == 'E') = '=';
-            MIQPproblem.csense = MIQPproblem.csense(:);
-        end
-
-        if MIQPproblem.osense == -1
-            MIQPproblem.osense = 'max';
-        else
-            MIQPproblem.osense = 'min';
-        end
-
-        MIQPproblem.vtype = vartype;
-        MIQPproblem.Q = 0.5*sparse(MIQPproblem.F);
-        MIQPproblem.modelsense = MIQPproblem.osense;
-        [MIQPproblem.A,MIQPproblem.rhs,MIQPproblem.obj,MIQPproblem.sense] = deal(sparse(MIQPproblem.A),MIQPproblem.b,MIQPproblem.c,MIQPproblem.csense);
-        resultgurobi = gurobi(MIQPproblem,params);
+        % set the parameters
+        params = getGUROBIParameters(cobraParams,solverParams,'MIQP');
+        % generate the Problem struct
+        GurobiProblem = buildGUROBIProblemFromCOBRAStruct(MIQPproblem,'MIQP');
+        
+        % update feasTol in case it is changed by the solver Parameters
+        cobraParams.feasTol = params.FeasibilityTol;
+        
+        % solve the problem.
+        resultgurobi = gurobi(GurobiProblem,params);
+        
         solStat = resultgurobi.status;
         if strcmp(resultgurobi.status,'OPTIMAL')
            stat = 1; % Optimal solution found

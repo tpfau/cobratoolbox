@@ -320,63 +320,18 @@ switch solver
         %% gurobi 5
         % Free academic licenses for the Gurobi solver can be obtained from
         % http://www.gurobi.com/html/academic.html
-        MILPproblem.A = deal(sparse(MILPproblem.A));
-
-        if cobraParams.printLevel == 0
-            params.OutputFlag = 0;
-            params.DisplayInterval = 1;
-        else
-            params.OutputFlag = 1;
-            params.DisplayInterval = 5;
-        end
-
-        %return solution when time limit is reached and save the log file
-        if ~isempty(cobraParams.logFile)
-            params.LogFile = cobraParams.logFile;
-        end
-        params.TimeLimit = cobraParams.timeLimit;
-
-        % set tolerances
-        params.MIPGap = cobraParams.relMipGapTol;
-        if cobraParams.intTol <= 1e-09
-            params.IntFeasTol = 1e-09;
-        else
-            params.IntFeasTol = cobraParams.intTol;
-        end
-        params.FeasibilityTol = cobraParams.feasTol;
-        params.OptimalityTol = cobraParams.optTol;
-
-        if (isempty(csense))
-            clear csense
-            csense(1:length(b),1) = '=';
-        else
-            csense(csense == 'L') = '<';
-            csense(csense == 'G') = '>';
-            csense(csense == 'E') = '=';
-            MILPproblem.csense = csense(:);
-        end
-
-        if osense == -1
-            MILPproblem.osense = 'max';
-        else
-            MILPproblem.osense = 'min';
-        end
-
-        % overwrite default params with directParams
-        fieldNames = fieldnames(solverParams);
-        for i = 1:size(fieldNames,1)
-            params.(fieldNames{i}) = solverParams.(fieldNames{i});
-        end
-
-
-        MILPproblem.vtype = vartype;
-        MILPproblem.modelsense = MILPproblem.osense;
-        [MILPproblem.A,MILPproblem.rhs,MILPproblem.obj,MILPproblem.sense] = deal(sparse(MILPproblem.A),MILPproblem.b,double(MILPproblem.c),MILPproblem.csense);
-        if ~isempty(x0)
-            MILPproblem.start = x0;
-        end
-        resultgurobi = gurobi(MILPproblem,params);
-
+        
+        % set the parameters
+        params = getGUROBIParameters(cobraParams,solverParams,'MILP');
+        % generate the Problem struct
+        GurobiProblem = buildGUROBIProblemFromCOBRAStruct(MILPproblem,'MILP');
+        
+        % update feasTol in case it is changed by the solver Parameters
+        cobraParams.feasTol = params.FeasibilityTol;
+        
+        % solve the problem.
+        resultgurobi = gurobi(GurobiProblem,params);
+               
         stat = resultgurobi.status;
         if strcmp(resultgurobi.status,'OPTIMAL')
             solStat = 1; % Optimal solution found

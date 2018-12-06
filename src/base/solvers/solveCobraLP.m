@@ -72,7 +72,8 @@ function solution = solveCobraLP(LPproblem, varargin)
 %                       * -1 - No solution reported (timelimit, numerical problem etc)
 %                     * .origStat:     Original status returned by the specific solver
 %                     * .time:         Solve time in seconds
-%                     * .basis:        (optional) LP basis corresponding to solution
+%                     * .basis:        (optional) LP basis corresponding to solution, solver dependent
+%                     
 %
 % NOTE:
 %           Optional parameters can also be set through the
@@ -889,82 +890,16 @@ switch solver
         %   params.outputflag = 0;          % Silence gurobi
         %   params.resultfile = 'test.mps'; % Write out problem to MPS file
 
-        % params.method gives the algorithm used to solve continuous models
-        % -1=automatic,
-        %  0=primal simplex,
-        %  1=dual simplex,
-        %  2=barrier,
-        %  3=concurrent,
-        %  4=deterministic concurrent
-        % i.e. params.method     = 1;          % use dual simplex method
-
-        param=solverParams;
-        if ~isfield(param,'OutputFlag')
-            switch cobraParams.printLevel
-                case 0
-                    param.OutputFlag = 0;
-                    param.DisplayInterval = 1;
-                case 1
-                    param.OutputFlag = 0;
-                    param.DisplayInterval = 1;
-                otherwise
-                    % silent
-                    param.OutputFlag = 0;
-                    param.DisplayInterval = 1;
-            end
-        end
-
-        if ~isfield(param,'FeasibilityTol')
-            param.FeasibilityTol = cobraParams.feasTol;
-        end
-        if ~isfield(param,'OptimalityTol')
-            param.OptimalityTol = cobraParams.optTol;
-        end
-
-        if (isempty(LPproblem.csense))
-            clear LPproblem.csense
-            LPproblem.csense(1:length(b),1) = '=';
-        else
-            LPproblem.csense(LPproblem.csense == 'L') = '<';
-            LPproblem.csense(LPproblem.csense == 'G') = '>';
-            LPproblem.csense(LPproblem.csense == 'E') = '=';
-            LPproblem.csense = LPproblem.csense(:);
-        end
-
-        if LPproblem.osense == -1
-            LPproblem.osense = 'max';
-        else
-            LPproblem.osense = 'min';
-        end
-
-        LPproblem.A = deal(sparse(LPproblem.A));
-        LPproblem.modelsense = LPproblem.osense;
-        %gurobi wants a dense double vector as an objective
-        [LPproblem.rhs,LPproblem.obj,LPproblem.sense] = deal(LPproblem.b,double(LPproblem.c)+0,LPproblem.csense);
-
-        % basis reuse - Ronan
-        if isfield(LPproblem,'basis') && ~isempty(LPproblem.basis)
-            LPproblem.cbasis = full(LPproblem.basis.cbasis);
-            LPproblem.vbasis = full(LPproblem.basis.vbasis);
-            LPproblem=rmfield(LPproblem,'basis');
-        end
-        % set the solver specific parameters
-        param = updateStructData(param,solverParams);
-
-        % update tolerance according to actual setting
-        cobraParams.feasTol = param.FeasibilityTol;
-
-
-        % call the solver
-        resultgurobi = gurobi(LPproblem,param);
-
-        % switch back to numeric
-        if strcmp(LPproblem.osense,'max')
-            LPproblem.osense = -1;
-        else
-            LPproblem.osense = 1;
-        end
-
+        % set the parameters
+        params = getGUROBIParameters(cobraParams,solverParams,'LP');
+        % generate the Problem struct
+        GurobiProblem = buildGUROBIProblemFromCOBRAStruct(LPproblem, 'LP');
+        
+        % update feasTol in case it is changed by the solver Parameters
+        cobraParams.feasTol = params.FeasibilityTol;
+        
+        % solve the problem.
+        resultgurobi = gurobi(GurobiProblem,params);
         % see the solvers original status -Ronan
         origStat = resultgurobi.status;
         switch resultgurobi.status
@@ -991,7 +926,7 @@ switch solver
                 % we simply remove the objective and solve again.
                 % if the status becomes 'OPTIMAL', it is unbounded, otherwise it is infeasible.
                 LPproblem.obj(:) = 0;
-                resultgurobi = gurobi(LPproblem,param);
+                resultgurobi = gurobi(LPproblem,params);
                 if strcmp(resultgurobi.status,'OPTIMAL')
                     stat = 2;
                 else
@@ -1001,7 +936,7 @@ switch solver
                 stat = -1; % Solution not optimal or solver problem
         end
 
-        if isfield(param,'Method')
+        if isfield(params,'Method')
             % -1=automatic,
             %  0=primal simplex,
             %  1=dual simplex,
@@ -1009,7 +944,7 @@ switch solver
             %  3=concurrent,
             %  4=deterministic concurrent
             % i.e. params.method     = 1;          % use dual simplex method
-            switch param.Method
+            switch params.Method
                 case -1
                     algorithm='automatic';
                 case 1

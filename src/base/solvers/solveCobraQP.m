@@ -480,52 +480,17 @@ switch solver
         %% gurobi 5
         % Free academic licenses for the Gurobi solver can be obtained from
         % http://www.gurobi.com/html/academic.html
-
-        resultgurobi = struct('x',[],'objval',[],'pi',[]);
-        %Set up the parameters
-        params = struct();
-        switch cobraParams.printLevel
-            case 0
-                params.OutputFlag = 0;
-                params.DisplayInterval = 1;
-            case cobraParams.printLevel>1
-                params.OutputFlag = 1;
-                params.DisplayInterval = 5;
-            otherwise
-                params.OutputFlag = 0;
-                params.DisplayInterval = 1;
-        end
-
-        params.Method = cobraParams.method;    %-1 = automatic, 0 = primal simplex, 1 = dual simplex, 2 = barrier, 3 = concurrent, 4 = deterministic concurrent
-        params.Presolve = -1; % -1 - auto, 0 - no, 1 - conserv, 2 - aggressive
-        params.IntFeasTol = cobraParams.feasTol;
-        params.FeasibilityTol = cobraParams.feasTol;
-        params.OptimalityTol = cobraParams.optTol;
-        %Update param struct with Solver Specific parameters
-        params = updateStructData(params,solverParams);
-
-        %Update feasTol in case it is changed by the solver Parameters
+        
+        % set the parameters
+        params = getGUROBIParameters(cobraParams,solverParams,'QP');
+        % generate the Problem struct
+        GurobiProblem = buildGUROBIProblemFromCOBRAStruct(QPproblem,'QP');
+        
+        % update feasTol in case it is changed by the solver Parameters
         cobraParams.feasTol = params.FeasibilityTol;
-
-        %Finished setting up options.
-
-        if (isempty(QPproblem.csense))
-            clear QPproblem.csense
-            %QPproblem.csense(1:length(b),1) = '=';
-            QPproblem.csense(1:length(b),1) = '=';
-        else
-            QPproblem.csense(QPproblem.csense == 'L') = '<';
-            QPproblem.csense(QPproblem.csense == 'G') = '>';
-            QPproblem.csense(QPproblem.csense == 'E') = '=';
-            QPproblem.csense = QPproblem.csense(:);
-        end
-
-        QPproblem.osense = 'min';
-
-        QPproblem.Q = 0.5*sparse(QPproblem.F);
-        QPproblem.modelsense = QPproblem.osense;
-        [QPproblem.A,QPproblem.rhs,QPproblem.obj,QPproblem.sense] = deal(sparse(QPproblem.A),QPproblem.b,osense*double(QPproblem.c),QPproblem.csense);
-        resultgurobi = gurobi(QPproblem,params);
+        
+        % solve the problem.
+        resultgurobi = gurobi(GurobiProblem,params);
         origStat = resultgurobi.status;
         if strcmp(resultgurobi.status,'OPTIMAL')
             stat = 1; % Optimal solution found
