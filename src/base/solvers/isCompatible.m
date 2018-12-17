@@ -122,7 +122,7 @@ function compatibleStatus = isCompatible(solverName, printLevel, specificSolverV
     % select the compatibility matrix based on the OS
     if isunix && ~ismac % linux
         tableNb = 1;
-        resultVERS = system_dependent('getos');
+        resultVERS = getOsFromVer();
         tmp = strsplit(testedOS{tableNb});
         if ~isempty(strfind(lower(resultVERS), lower(tmp{2})))
             cMatrix = compatMatrix{tableNb};
@@ -150,7 +150,7 @@ function compatibleStatus = isCompatible(solverName, printLevel, specificSolverV
             end
         end
     else % Windows
-        resultVERS = system_dependent('getos');
+        resultVERS = getOsFromVer();
         for tableNb = length(testedOS)-1:length(testedOS) % loop through the last 2 tables
             tmp = strsplit(testedOS{tableNb});
             if ~isempty(strfind(resultVERS, tmp{2}))
@@ -239,10 +239,20 @@ function compatibleStatus = isCompatible(solverName, printLevel, specificSolverV
     end
 
     % special case: cplex_direct
-    if strcmp(solverName, 'cplex_direct') && ~verLessThan('matlab', '8.4')
+    if strcmp(solverName, 'cplex_direct') && (isoctave() || ~verLessThan('matlab', '8.4'))
         compatibleStatus = 0;
         if printLevel > 0
             fprintf([' > ', 'cplex_direct is NOT compatible with MATLAB ', versionMatlab, ' on your operating system. Try using the tomlab_cplex interface.\n']);
         end
     end
+end
+
+
+
+function osString = getOsFromVer()
+  % extract the operating system string from the version output (equivalent between octave and matlab)
+  verString = evalc('ver');
+  verLines = strsplit(verString,'\n');
+  osLine = cellfun(@(x) ~isempty(regexp(x,'Operating System:.*')),verLines);
+  osString = verLines{osLine};
 end

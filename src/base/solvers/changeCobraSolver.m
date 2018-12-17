@@ -425,7 +425,7 @@ if compatibleStatus == 1 || compatibleStatus == 2
             catch ME
                 solverOK = false;
             end
-            if verLessThan('matlab', '9') && ~verLessThan('matlab', '8.6')  % >2015b
+            if isoctave || verLessThan('matlab', '9') && ~verLessThan('matlab', '8.6')  % >2015b
                 warning('off', 'MATLAB:lang:badlyScopedReturnValue');  % take out warning message
             end
         case {'lp_solve', 'qpng', 'pdco', 'gurobi_mex'}

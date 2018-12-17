@@ -56,7 +56,7 @@ originalSize = parser.Results.originalSize;
 targetSize = parser.Results.targetSize;
 excludeFields = parser.Results.excludeFields;
 
-[originalFields,dimensions] = getModelFieldsForType(model, type, originalSize);
+[originalFields,dimensions] = getModelFieldsForType(model, type, 'fieldSize', originalSize);
 fields = originalFields;
 fields = setdiff(fields,excludeFields);
 

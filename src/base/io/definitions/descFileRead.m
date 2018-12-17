@@ -47,5 +47,11 @@ end
 [data{1:2:end}] = deal(headers{:});
 
 raw = struct(data{:});
+
+rawfields = fieldnames(raw);
+for i = 1:numel(rawfields)
+    raw.(rawfields{i}) = cellstr(raw.(rawfields{i}));
+    raw.(rawfields{i}) = cellfun(@(x) x(x>= 31 & x <= 126),raw.(rawfields{i}),'Uniform',0);
+end
     
 fclose(f);

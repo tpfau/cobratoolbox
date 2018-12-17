@@ -163,7 +163,7 @@ if strcmp(type,'genes')
 end
 
 
-[fields,dimensions] = getModelFieldsForType(model, type, fieldSize);
+[fields,dimensions] = getModelFieldsForType(model, type, 'fieldSize', fieldSize);
 
 for i = 1:numel(fields)
     if any(ismember(fields{i},excludeFields))

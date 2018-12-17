@@ -74,11 +74,23 @@ for i = 1:numel(testFileNames)
         if results(i).skipped
             fprintf('Reason:\n%s\n',results(i).statusMessage);
         else
-            trace = results(i).Error.getReport();
-            tracePerLine = strsplit(trace,'\n');
-            testSuitePosition = find(cellfun(@(x) ~isempty(strfind(x, 'runTestSuite')),tracePerLine));
-            trace = sprintf(strjoin(tracePerLine(1:(testSuitePosition-7)),'\n')); % Remove the testSuiteTrace.
-            fprintf('Reason:\n%s\n',trace);
+            if isoctave
+                fileStack = {results(i).Error.stack.file};
+                nonTestSuitePos = cellfun(@(x) isempty(regexp(x,'runScriptFile.m$')), fileStack);
+                lastTestSuitePos = min(find(nonTestSuitePos));
+                % build the stack trace
+                trace = results(i).Error.message;
+                for e = 1:lastTestSuitePos-1
+                    trace = [trace, '\n', results(i).Error.stack(e).file, ' at line', results(i).Error.stack(e).line]
+                end    
+                fprintf('Reason:\n%s\n',trace);            
+            else            
+                trace = results(i).Error.getReport();
+                tracePerLine = strsplit(trace,'\n');
+                testSuitePosition = find(cellfun(@(x) ~isempty(strfind(x, 'runTestSuite')),tracePerLine));
+                trace = sprintf(strjoin(tracePerLine(1:(testSuitePosition-7)),'\n')); % Remove the testSuiteTrace.
+                fprintf('Reason:\n%s\n',trace);
+            end
         end
     end
     fprintf('\n\n****************************************************\n');

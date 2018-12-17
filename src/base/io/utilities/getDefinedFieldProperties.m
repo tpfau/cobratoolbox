@@ -148,23 +148,23 @@ if isempty(CBT_PROG_FIELD_PROPS)
         xval = relarray{i,2};
         if ~isnumeric(xval)
             xnumval = str2num(xval);
-            if ~isempty(xnumval)
+            if ~isempty(xnumval) && ~iscell(ynumval)
                 xval = xnumval;
             end
         end
         yval = relarray{i,3};
         if ~isnumeric(yval)
             ynumval = str2num(yval);
-            if ~isempty(ynumval)
+            if ~isempty(ynumval) && ~iscell(ynumval)
                 yval = ynumval;
             end
         end
         default = relarray{i,5};
         if ischar(default)
-            if ~isempty(str2num(default))
+            if ~isempty(str2num(default)) && ~iscell(str2num(default))
                 default = str2num(default);
             end
-        end
+        end        
         basic = eval(eval(relarray{i,6}));        
         FieldType = relarray{i,7};  
         FBA = eval(eval(relarray{i,8}));        

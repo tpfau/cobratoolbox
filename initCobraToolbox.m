@@ -566,12 +566,6 @@ function initCobraToolbox(updateToolbox)
 
     % cleanup at the end of the successful run
     removeTempFiles(CBTDIR, dirContent);
-
-    % clear all temporary variables
-    % Note: global variables are kept in memory - DO NOT clear all the variables!
-    if ENV_VARS.printLevel
-        clearvars
-    end
 end
 
 function [installed, versionGit] = checkGit()

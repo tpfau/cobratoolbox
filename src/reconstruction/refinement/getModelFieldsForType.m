@@ -38,7 +38,7 @@ PossibleTypes = {'rxns','mets','comps','genes','evars','ctrs'};
 parser = inputParser();
 parser.addRequired('model',@(x) isfield(x,type));
 parser.addRequired('type',@(x) any(ismember(PossibleTypes,x)));
-parser.addOptional('fieldSize',numel(model.(type)),@isnumeric)
+parser.addParameter('fieldSize',numel(model.(type)),@isnumeric)
 
 parser.parse(model,type,varargin{:});
 

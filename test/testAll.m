@@ -85,7 +85,7 @@ if launchTestSuite
         WAITBAR_TYPE = 1;
     end
 
-    if verLessThan('matlab', '8.2')
+    if ~isoctave() && verLessThan('matlab', '8.2')
         error('The testsuite of The COBRA Toolbox can only be run with MATLAB R2014b+.')
     end
 

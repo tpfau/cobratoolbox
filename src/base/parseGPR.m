@@ -76,8 +76,11 @@ else
     totalGeneList = currentGenes;
     convertGenes = @(x) sprintf('x(%d)',  positions(strcmp(x, totalGeneList)));
 end
-
-ruleString = regexprep(grRuleString, '([^\(\)\|\&\s]+)', '${convertGenes($0)}');
+if isoctave()
+    elements = regexprep(grRuleString, '(?<geneID>[^\(\)\|\&\s]+)','names');
+else
+    ruleString = regexprep(grRuleString, '([^\(\)\|\&\s]+)', '${convertGenes($0)}');
+end
 ruleString = regexprep(ruleString, '[\s]?x\(([0-9]+)\)[\s]?', ' x($1) '); %introduce spaces around entries.
 ruleString = strtrim(ruleString); %Remove leading and trailing spaces
 end

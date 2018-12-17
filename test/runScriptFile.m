@@ -29,8 +29,8 @@ try
     % run the file
     executefile(fileName);
 catch ME    
-    % vatch errors and interpret them
-    clearvars -except ME COBRA_TESTSUITE_STARTTIME COBRA_TESTSUITE_TESTFILE CBT_MISSING_REQUIREMENTS_ERROR_ID
+    % watch errors and interpret them
+    % clearvars -except ME COBRA_TESTSUITE_STARTTIME COBRA_TESTSUITE_TESTFILE CBT_MISSING_REQUIREMENTS_ERROR_ID
     scriptTime = etime(clock(), COBRA_TESTSUITE_STARTTIME);
     result = struct('status', 'failed', 'failed', true, 'passed', false, 'skipped', false, 'fileName', ...
                     COBRA_TESTSUITE_TESTFILE, 'time', scriptTime, 'statusMessage', 'fail', 'Error', ME);
@@ -51,9 +51,13 @@ end
 
 % get the timinig.
 scriptTime = etime(clock(), COBRA_TESTSUITE_STARTTIME);
-
-result = struct('status', 'passed', 'failed', false, 'passed', true, 'skipped', false, 'fileName', ...
-                COBRA_TESTSUITE_TESTFILE, 'time', scriptTime, 'statusMessage', 'success', 'Error', MException('', ''));
+if isoctave()
+    result = struct('status', 'passed', 'failed', false, 'passed', true, 'skipped', false, 'fileName', ...
+                  COBRA_TESTSUITE_TESTFILE, 'time', scriptTime, 'statusMessage', 'success', 'Error', struct('message','','identifier','', 'Error',struct('file',{},'name',{},'line',{},'column',{},'scope',{},'context',{})));
+else
+    result = struct('status', 'passed', 'failed', false, 'passed', true, 'skipped', false, 'fileName', ...
+                  COBRA_TESTSUITE_TESTFILE, 'time', scriptTime, 'statusMessage', 'success', 'Error', MException('', ''));
+end              
 
 end
 
