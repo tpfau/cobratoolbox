@@ -77,7 +77,13 @@ else
     convertGenes = @(x) sprintf('x(%d)',  positions(strcmp(x, totalGeneList)));
 end
 if isoctave()
-    elements = regexprep(grRuleString, '(?<geneID>[^\(\)\|\&\s]+)','names');
+    genes = unique(regexp(grRuleString,'([^\(\)\|\&\s]+)','match'));    
+    for i = 1:numel(genes)
+        grRuleString = regexprep(grRuleString,['(?<=^|[\(\)\|\&\s])',...
+            regexptranslate('escape',genes{i}), '(?=$|[\(\)\|\&\s$])'],...
+            ['x(' num2str(find(ismember(totalGeneList,genes{i}))) ')']);
+    end
+    ruleString = grRuleString;
 else
     ruleString = regexprep(grRuleString, '([^\(\)\|\&\s]+)', '${convertGenes($0)}');
 end

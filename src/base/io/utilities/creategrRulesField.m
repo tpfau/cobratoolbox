@@ -41,5 +41,9 @@ end
 currentrules = model.rules(pos);
 currentrules = strrep(currentrules,'&','and');
 currentrules = strrep(currentrules,'|','or');
-currentrules = regexprep(currentrules,'x\(([0-9]+)\)','${model.genes{str2num($1)}}');
+if isoctave
+    currentrules = regexprepfun(currentrules,'x\(([0-9]+)\)','${model.genes{$1}}');
+else
+    currentrules = regexprep(currentrules,'x\(([0-9]+)\)','${model.genes{str2num($1)}}');
+end
 model.grRules(pos,1) = currentrules;

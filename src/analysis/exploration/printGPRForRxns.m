@@ -46,7 +46,11 @@ else
     if isfield(model,'rules') && isfield(model,'genes')
         gprs = strrep(model.rules(rxnPos),'|','or');
         gprs = strrep(gprs,'&','and');
-        gprs = regexprep(gprs,'x\(([0-9]+)\)','${model.genes{str2num($1)}}');
+        if isoctave
+            gprs = regexprepfun(gprs,'x\(([0-9]+)\)','${model.genes{$1}}');
+        else
+            gprs = regexprep(gprs,'x\(([0-9]+)\)','${model.genes{str2num($1)}}');
+        endif        
     else
         gprs = repmat({''},size(rxnPos));
     end
