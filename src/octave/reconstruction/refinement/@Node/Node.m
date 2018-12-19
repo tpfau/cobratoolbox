@@ -133,7 +133,6 @@ classdef (HandleCompatible) Node < handle
             % INPUTS:
             %    childNode:   The child to add to the node.
             %   
-            fprintf('Adding child: %s\n',childNode.toString())
             if isa(childNode,class(self)) %if the nodes are of the same class, we just add the children.
                 for i=1:numel(childNode.children)
                     cchild = childNode.children{i};

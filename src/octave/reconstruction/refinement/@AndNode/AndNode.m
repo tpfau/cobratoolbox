@@ -110,20 +110,17 @@ classdef (HandleCompatible) AndNode < Node
             
 
         function dnfNode = convertToDNF(self)
-            fprintf('AndNode: The original node is %s\n',self.toString());
             dnfNode = OrNode();
             childNodes = [];
             sizes = [];
             for c=1:numel(self.children)
                 child = self.children{c};
-                fprintf('AndNode: Adding Children of %s\n',child.toString());                       
                 if isempty(childNodes)
                     childNodes = child.convertToDNF();
                 else
                     childNodes(end+1) = child.convertToDNF();
                 end
                 temp = childNodes(end);
-                fprintf('AndNode: Converted Child is %s\n',temp.toString());                       
                 convNode = childNodes(end);
                 sizes(end+1) = numel(convNode.children);                               
             end
@@ -133,7 +130,6 @@ classdef (HandleCompatible) AndNode < Node
                 nextNode = AndNode();
                 for i=1:numel(step)
                     convNode = childNodes(i);
-                    fprintf('AndNode: Adding %ith child of %s\n',i,convNode.toString());                       
                     if strcmp(class(convNode),'LiteralNode')
                         nextNode.addChild(convNode);
                     else
@@ -141,7 +137,6 @@ classdef (HandleCompatible) AndNode < Node
                     end
                 end
                 dnfNode.addChild(nextNode);
-                fprintf('AndNode: after adding %s dnfNode is %s\n',nextNode.toString(),dnfNode.toString());                       
                 step = self.nextcombination(sizes,step);                
             end
             %finally, remove all duplicate literal nodes from this node.
@@ -155,8 +150,6 @@ classdef (HandleCompatible) AndNode < Node
                         if ~any(~cellfun(@isempty, strfind(literals,cchild.toString())))
                             literals{end+1} = cchild.toString();
                         else
-                            disp(['AddNode: Removing child ', cchild.toString(), ' since its already present in:'])
-                            disp(literals)
                             childrenToRemove(i) = true;
                         end
                     end
@@ -245,7 +238,7 @@ classdef (HandleCompatible) AndNode < Node
             if childrenChanged
                 self.children = mergeNode.children;
                 for i = 1:numel(self.children)
-                    cchild = self.children{i}
+                    cchild = self.children{i};
                     cchild.parent = self;        
                 end
             end
