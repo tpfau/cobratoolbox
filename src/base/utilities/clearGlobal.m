@@ -6,6 +6,10 @@ function clearGlobal(globalName)
 %
 % INPUTS:
 %    globalName:    The name of the global variable to clear.
-
-    clearvars('-global',globalName);
+    if isoctave
+        eval(['global ' globalName]);
+        eval([globalName ' = []']);
+    else
+        clearvars('-global',globalName);  
+    end    
 end
